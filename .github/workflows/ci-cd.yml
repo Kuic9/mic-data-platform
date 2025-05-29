@@ -1,0 +1,98 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install server dependencies
+      run: npm ci
+    
+    - name: Install client dependencies
+      run: |
+        cd client
+        npm ci
+    
+    - name: Run server tests
+      run: npm test --if-present
+    
+    - name: Run client tests
+      run: |
+        cd client
+        npm test --if-present
+    
+    - name: Build client
+      run: |
+        cd client
+        npm run build
+    
+    - name: Check for security vulnerabilities
+      run: |
+        npm audit --audit-level high
+        cd client
+        npm audit --audit-level high
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run ESLint
+      run: npx eslint . --ext .js,.jsx --ignore-path .gitignore --max-warnings 0
+      continue-on-error: true
+
+  deploy-staging:
+    needs: [test, lint]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Deploy to staging
+      run: echo "Deploy to staging environment"
+      # 這裡可以添加實際的部署腳本
+      
+  deploy-production:
+    needs: [test, lint]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Deploy to production
+      run: echo "Deploy to production environment"
+      # 這裡可以添加實際的部署腳本 
