@@ -32,7 +32,7 @@ function ProjectDetailPage() {
   }, [projectId]);
 
   if (loading) {
-    return <div className="loading">正在加載項目詳情...</div>;
+    return <div className="loading">Loading project details...</div>;
   }
 
   if (error) {
@@ -40,7 +40,7 @@ function ProjectDetailPage() {
   }
 
   if (!project) {
-    return <div className="error">找不到項目</div>;
+    return <div className="error">Project not found</div>;
   }
 
   return (
@@ -49,7 +49,7 @@ function ProjectDetailPage() {
         <div className="project-header-content">
           <h1 className="project-title">{project.project_name}</h1>
           <div className={`project-status-badge status-${project.project_status ? project.project_status.toLowerCase().replace(' ', '-') : 'unknown'}`}>
-            {project.project_status || project.status || '未知狀態'}
+            {project.project_status || project.status || 'Unknown Status'}
           </div>
         </div>
         <Link to="/projects" className="back-link">
@@ -57,7 +57,7 @@ function ProjectDetailPage() {
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
-          返回項目總覽
+          Back to Projects
         </Link>
       </div>
       
@@ -75,55 +75,55 @@ function ProjectDetailPage() {
           </div>
           <div className="project-info-grid">
             <div className="info-item">
-              <div className="info-label">地點</div>
+              <div className="info-label">Location</div>
               <div className="info-value">{project.location}</div>
             </div>
             <div className="info-item">
-              <div className="info-label">客戶</div>
+              <div className="info-label">Client</div>
               <div className="info-value">{project.client}</div>
             </div>
             <div className="info-item">
-              <div className="info-label">承建方</div>
+              <div className="info-label">Contractor</div>
               <div className="info-value">{project.contractor}</div>
             </div>
             <div className="info-item">
-              <div className="info-label">開始日期</div>
+              <div className="info-label">Start Date</div>
               <div className="info-value">{project.start_date}</div>
             </div>
             {project.end_date && (
               <div className="info-item">
-                <div className="info-label">結束日期</div>
+                <div className="info-label">End Date</div>
                 <div className="info-value">{project.end_date}</div>
               </div>
             )}
             <div className="info-item">
-              <div className="info-label">建築高度</div>
+              <div className="info-label">Building Height</div>
               <div className="info-value">{project.building_height}</div>
             </div>
             <div className="info-item">
-              <div className="info-label">樓層數</div>
+              <div className="info-label">Number of Floors</div>
               <div className="info-value">{project.num_floors}</div>
             </div>
             <div className="info-item">
-              <div className="info-label">單位總數</div>
+              <div className="info-label">Total Units</div>
               <div className="info-value">{project.total_units}</div>
             </div>
             <div className="info-item">
-              <div className="info-label">模塊總數</div>
+              <div className="info-label">Total Modules</div>
               <div className="info-value">{project.total_modules}</div>
             </div>
           </div>
         </div>
 
         <div className="project-description-box">
-          <h3 className="section-title">項目描述</h3>
+          <h3 className="section-title">Project Description</h3>
           <p className="project-description-text">{project.description}</p>
         </div>
 
         <div className="units-section">
           <div className="section-header">
-            <h2 className="section-title">項目單位</h2>
-            <div className="total-count">{units.length} 個單位</div>
+            <h2 className="section-title">Project Units</h2>
+            <div className="total-count">{units.length} Units</div>
           </div>
 
           <div className="units-grid">
@@ -131,12 +131,12 @@ function ProjectDetailPage() {
               <Link to={`/units/${unit.unit_id}`} key={unit.unit_id} className="unit-card">
                 <div className="unit-header">
                   <div className="unit-number">
-                    <span>樓層 {unit.floor_number}</span>
+                    <span>Floor {unit.floor_number}</span>
                     <span className="separator">•</span>
-                    <span>單位 {unit.unit_number}</span>
+                    <span>Unit {unit.unit_number}</span>
                   </div>
                   <div className={`status-pill ${unit.status ? unit.status.toLowerCase() : 'unknown'}`}>
-                    {unit.status || '未知'}
+                    {unit.status || 'Unknown'}
                   </div>
                 </div>
                 <div className="unit-details">
@@ -158,7 +158,7 @@ function ProjectDetailPage() {
                           <path d="M18 22v-8a4 4 0 0 0-4-4H4"></path>
                         </svg>
                       </span>
-                      <span>{unit.bedrooms} 臥室</span>
+                      <span>{unit.bedrooms} Bedrooms</span>
                     </div>
                     <div className="unit-spec">
                       <span className="spec-icon">
@@ -167,12 +167,12 @@ function ProjectDetailPage() {
                           <path d="M21 9V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"></path>
                         </svg>
                       </span>
-                      <span>{unit.bathrooms} 浴室</span>
+                      <span>{unit.bathrooms} Bathrooms</span>
                     </div>
                   </div>
                 </div>
                 <div className="view-unit-cta">
-                  <span>查看單位詳情</span>
+                  <span>View Unit Details</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                     <polyline points="12 5 19 12 12 19"></polyline>

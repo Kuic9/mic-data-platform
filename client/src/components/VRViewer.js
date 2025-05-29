@@ -41,7 +41,7 @@ const VRViewer = ({ micModules = [], selectedModule = null }) => {
   const [currentView, setCurrentView] = useState('overview');
 
   useEffect(() => {
-    // 檢查 WebXR 支持
+    // Check WebXR support
     if (navigator.xr) {
       navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
         setVrSupported(supported);
@@ -60,7 +60,7 @@ const VRViewer = ({ micModules = [], selectedModule = null }) => {
 
   const switchView = (viewType) => {
     setCurrentView(viewType);
-    // 這裡可以添加相機位置切換邏輯
+    // Camera position switching logic can be added here
   };
 
   const generateMicModules = () => {
@@ -71,7 +71,7 @@ const VRViewer = ({ micModules = [], selectedModule = null }) => {
       
       return (
         <a-entity key={module.id} position={position}>
-          {/* MiC 模組主體 */}
+          {/* MiC Module Main Body */}
           <a-box 
             position="0 1 0"
             width="2.5"
@@ -82,16 +82,16 @@ const VRViewer = ({ micModules = [], selectedModule = null }) => {
             className="clickable"
           />
           
-          {/* 模組標籤 */}
+          {/* Module Label */}
           <a-text
-            value={`${module.name || 'Module'}\n${module.type || 'Unknown'}\n狀態: ${module.status || 'Unknown'}`}
+            value={`${module.name || 'Module'}\n${module.type || 'Unknown'}\nStatus: ${module.status || 'Unknown'}`}
             position="0 3.5 0"
             align="center"
             color="#FFFFFF"
             width="6"
           />
           
-          {/* 窗戶 */}
+          {/* Windows */}
           <a-box 
             position="-1 1.2 3.1"
             width="0.8"
@@ -109,7 +109,7 @@ const VRViewer = ({ micModules = [], selectedModule = null }) => {
             material="transparent: true; opacity: 0.7"
           />
           
-          {/* 門 */}
+          {/* Door */}
           <a-box 
             position="0 0.9 3.1"
             width="0.8"
@@ -125,22 +125,22 @@ const VRViewer = ({ micModules = [], selectedModule = null }) => {
   return (
     <VRContainer>
       <VRControls>
-        <h3>MiC VR 查看器</h3>
+        <h3>MiC VR Viewer</h3>
         <div>
           <ControlButton onClick={() => switchView('overview')}>
-            總覽視圖
+            Overview
           </ControlButton>
           <ControlButton onClick={() => switchView('detail')}>
-            詳細視圖
+            Detail View
           </ControlButton>
           {vrSupported && (
             <ControlButton onClick={enterVR}>
-              進入 VR
+              Enter VR
             </ControlButton>
           )}
         </div>
         <div style={{ marginTop: '10px', fontSize: '12px' }}>
-          {vrSupported ? '✓ VR 支持' : '✗ VR 不支持'}
+          {vrSupported ? '✓ VR Supported' : '✗ VR Not Supported'}
         </div>
       </VRControls>
 
@@ -152,7 +152,7 @@ const VRViewer = ({ micModules = [], selectedModule = null }) => {
         cursor="rayOrigin: mouse"
         background="color: #87CEEB"
       >
-        {/* 資產預載 */}
+        {/* Asset Preload */}
         <a-assets>
           <a-mixin 
             id="clickable"
@@ -161,7 +161,7 @@ const VRViewer = ({ micModules = [], selectedModule = null }) => {
           />
         </a-assets>
 
-        {/* 地面 */}
+        {/* Ground */}
         <a-plane 
           position="0 0 -4" 
           rotation="-90 0 0" 
@@ -171,7 +171,7 @@ const VRViewer = ({ micModules = [], selectedModule = null }) => {
           material="roughness: 0.8"
         />
 
-        {/* 照明 */}
+        {/* Lighting */}
         <a-light type="ambient" color="#404040" intensity="0.4" />
         <a-light 
           type="directional" 
@@ -180,21 +180,21 @@ const VRViewer = ({ micModules = [], selectedModule = null }) => {
           intensity="0.8"
         />
 
-        {/* MiC 模組 */}
+        {/* MiC Modules */}
         {generateMicModules()}
 
-        {/* 建築效果預覽 */}
+        {/* Building Effect Preview */}
         {selectedModule && (
           <a-entity position="10 0 0">
             <a-text
-              value="預期建築效果"
+              value="Expected Building Effect"
               position="0 4 0"
               align="center"
               color="#FFFFFF"
               width="8"
             />
             
-            {/* 完整建築模型 */}
+            {/* Complete Building Model */}
             <a-box 
               position="0 2 0"
               width="8"
@@ -204,7 +204,7 @@ const VRViewer = ({ micModules = [], selectedModule = null }) => {
               material="roughness: 0.2; metalness: 0.3"
             />
             
-            {/* 屋頂 */}
+            {/* Roof */}
             <a-cone 
               position="0 4.5 0"
               radius-bottom="6"
@@ -215,7 +215,7 @@ const VRViewer = ({ micModules = [], selectedModule = null }) => {
           </a-entity>
         )}
 
-        {/* 相機和控制器 */}
+        {/* Camera and Controller */}
         <a-entity 
           id="cameraRig" 
           position="0 1.6 8"
@@ -227,9 +227,9 @@ const VRViewer = ({ micModules = [], selectedModule = null }) => {
           />
         </a-entity>
 
-        {/* 互動提示 */}
+        {/* Interactive Tips */}
         <a-text
-          value="使用滑鼠點擊或 VR 控制器選擇 MiC 模組&#10;WASD 鍵移動，滑鼠環視"
+          value="Use mouse click or VR controller to select MiC modules&#10;WASD keys to move, mouse to look around"
           position="0 0.5 5"
           align="center"
           color="#FFFFFF"

@@ -26,7 +26,7 @@ function ModuleDetailPage() {
   }, [moduleId]);
 
   const handleVRView = () => {
-    // 跳轉到 VR 頁面，並將模組資訊作為狀態傳遞
+    // Navigate to VR page and pass module information as state
     navigate('/vr', { 
       state: { 
         selectedModule: module,
@@ -60,13 +60,13 @@ function ModuleDetailPage() {
           <button 
             className="vr-view-button"
             onClick={handleVRView}
-            title="在 VR 中查看此模組"
+            title="In VR view this module"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="1" y="5" width="22" height="14" rx="7"/>
               <path d="m8 12 4-4 4 4"/>
             </svg>
-            VR 查看
+            VR View
           </button>
           <Link to={`/units/${module.unit_id}`} className="back-link">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -88,7 +88,7 @@ function ModuleDetailPage() {
                 <polyline points="2 17 12 22 22 17"></polyline>
                 <polyline points="2 12 12 17 22 12"></polyline>
               </svg>
-              <span>點擊進入 VR 查看</span>
+              <span>Click to enter VR view</span>
             </div>
           </div>
           

@@ -138,28 +138,28 @@ const VRPage = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // 檢查是否從 Module 詳情頁面導航而來
+    // Check if navigated from Module detail page
     if (location.state?.selectedModule && location.state?.fromModuleDetail) {
       const moduleFromState = location.state.selectedModule;
       
-      // 將單個模組轉換為 MiC 模組格式
+      // Convert single module to MiC module format
       const convertedModule = {
         id: moduleFromState.module_id,
         name: `${moduleFromState.module_type} - ${moduleFromState.module_id}`,
         type: getModuleType(moduleFromState.module_type),
         status: moduleFromState.status.toLowerCase().replace(' ', '-'),
         dimensions: moduleFromState.dimensions || { width: 3.0, height: 2.8, depth: 4.0 },
-        materials: [moduleFromState.major_material || '混凝土'],
+        materials: [moduleFromState.major_material || 'Concrete'],
         position: { x: 0, y: 0, z: 0 }
       };
 
       setMicModules([convertedModule]);
       setSelectedModule(convertedModule);
       
-      // 創建虛擬模型
+      // Create virtual model
       const virtualModel = {
         id: `model_${moduleFromState.module_id}`,
-        name: `模型 - ${moduleFromState.module_id}`,
+        name: `Model - ${moduleFromState.module_id}`,
         type: '.virtual',
         status: 'completed'
       };
@@ -190,7 +190,7 @@ const VRPage = () => {
         return value;
       }
     }
-    return 'bedroom'; // 默認類型
+    return 'bedroom'; // Default type
   };
 
   const loadModels = async () => {
@@ -199,7 +199,7 @@ const VRPage = () => {
       const modelsData = await revitService.getConvertedModels();
       setModels(modelsData);
     } catch (error) {
-      console.error('載入模型失敗:', error);
+      console.error('Loading models failed:', error);
     } finally {
       setLoading(false);
     }
@@ -210,34 +210,34 @@ const VRPage = () => {
       const modulesData = await revitService.getMicModules(modelId);
       setMicModules(modulesData);
     } catch (error) {
-      console.error('載入 MiC 模組失敗:', error);
-      // 如果沒有真實數據，使用模擬數據
+      console.error('Loading MiC modules failed:', error);
+      // If no real data, use simulated data
       setMicModules([
         {
           id: '1',
-          name: '浴室模組 A',
+          name: 'Bathroom Module A',
           type: 'bathroom',
           status: 'completed',
           dimensions: { width: 2.5, height: 2.8, depth: 3.0 },
-          materials: ['瓷磚', '不鏽鋼', '玻璃'],
+          materials: ['Tile', 'Stainless Steel', 'Glass'],
           position: { x: 0, y: 0, z: 0 }
         },
         {
           id: '2',
-          name: '廚房模組 B',
+          name: 'Kitchen Module B',
           type: 'kitchen',
           status: 'in-progress',
           dimensions: { width: 3.0, height: 2.8, depth: 4.0 },
-          materials: ['石英石', '不鏽鋼', '木材'],
+          materials: ['Quartz', 'Stainless Steel', 'Wood'],
           position: { x: 3, y: 0, z: 0 }
         },
         {
           id: '3',
-          name: '臥室模組 C',
+          name: 'Bedroom Module C',
           type: 'bedroom',
           status: 'pending',
           dimensions: { width: 4.0, height: 2.8, depth: 5.0 },
-          materials: ['木地板', '石膏板', '玻璃'],
+          materials: ['Wood Floor', 'Gypsum Board', 'Glass'],
           position: { x: 6, y: 0, z: 0 }
         }
       ]);
@@ -255,11 +255,11 @@ const VRPage = () => {
         onProgress: (progress) => setUploadProgress(progress)
       });
 
-      console.log('文件上傳成功:', result);
-      await loadModels(); // 重新載入模型列表
+      console.log('File upload successful:', result);
+      await loadModels(); // Reload model list
     } catch (error) {
-      console.error('文件上傳失敗:', error);
-      alert('文件上傳失敗，請檢查文件格式是否正確');
+      console.error('File upload failed:', error);
+      alert('File upload failed, please check if the file format is correct');
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -280,7 +280,7 @@ const VRPage = () => {
     if (revitFile) {
       handleFileUpload(revitFile);
     } else {
-      alert('請上傳 Revit (.rvt)、IFC (.ifc) 或 GLB (.glb) 文件');
+      alert('Please upload Revit (.rvt), IFC (.ifc) or GLB (.glb) files');
     }
   };
 
@@ -303,9 +303,9 @@ const VRPage = () => {
         optimizeForVR: true,
         micModules: micModules
       });
-      console.log('VR 場景生成成功:', vrScene);
+      console.log('VR scene generation successful:', vrScene);
     } catch (error) {
-      console.error('VR 場景生成失敗:', error);
+      console.error('VR scene generation failed:', error);
     }
   };
 
@@ -313,7 +313,7 @@ const VRPage = () => {
     <PageContainer>
       <Sidebar>
         <SectionTitle>
-          {location.state?.fromModuleDetail ? 'Module VR View' : 'Revit 模型管理'}
+          {location.state?.fromModuleDetail ? 'Module VR View' : 'Revit Model Management'}
         </SectionTitle>
         
         {!location.state?.fromModuleDetail && (
@@ -326,7 +326,7 @@ const VRPage = () => {
             >
               {isUploading ? (
                 <div>
-                  <p>上傳中... {uploadProgress}%</p>
+                  <p>Uploading... {uploadProgress}%</p>
                   <ProgressBar>
                     <div 
                       className="progress-fill" 
@@ -336,9 +336,9 @@ const VRPage = () => {
                 </div>
               ) : (
                 <div>
-                  <p>拖拽 Revit 文件到此處</p>
-                  <p>或點擊選擇文件</p>
-                  <small>支持 .rvt, .ifc, .glb 格式</small>
+                  <p>Drag Revit files here</p>
+                  <p>or click to select files</p>
+                  <small>Support .rvt, .ifc, .glb formats</small>
                 </div>
               )}
             </FileUploadArea>
@@ -352,11 +352,11 @@ const VRPage = () => {
             />
 
             <div>
-              <h4>已導入模型</h4>
+              <h4>Imported Models</h4>
               {loading ? (
-                <p>載入中...</p>
+                <p>Loading...</p>
               ) : models.length === 0 ? (
-                <p>暫無模型，請上傳 Revit 文件</p>
+                <p>No models yet, please upload Revit files</p>
               ) : (
                 models.map(model => (
                   <ModuleCard
@@ -365,7 +365,7 @@ const VRPage = () => {
                     onClick={() => setSelectedModel(model)}
                   >
                     <h5>{model.name}</h5>
-                    <p>類型: {model.type}</p>
+                    <p>Type: {model.type}</p>
                     <StatusBadge className={model.status}>
                       {model.status}
                     </StatusBadge>
@@ -378,10 +378,10 @@ const VRPage = () => {
 
         {selectedModel && (
           <>
-            <SectionTitle>MiC 模組</SectionTitle>
+            <SectionTitle>MiC Modules</SectionTitle>
             {!location.state?.fromModuleDetail && (
               <Button onClick={generateVRScene}>
-                生成 VR 場景
+                Generate VR Scene
               </Button>
             )}
             
@@ -392,14 +392,14 @@ const VRPage = () => {
                 onClick={() => setSelectedModule(module)}
               >
                 <h5>{module.name}</h5>
-                <p>類型: {module.type}</p>
-                <p>尺寸: {module.dimensions.width}×{module.dimensions.height}×{module.dimensions.depth}m</p>
+                <p>Type: {module.type}</p>
+                <p>Size: {module.dimensions.width}×{module.dimensions.height}×{module.dimensions.depth}m</p>
                 <StatusBadge className={module.status}>
                   {module.status}
                 </StatusBadge>
                 <div style={{ marginTop: '10px' }}>
-                  <Button size="small">編輯</Button>
-                  <Button size="small" className="secondary">複製</Button>
+                  <Button size="small">Edit</Button>
+                  <Button size="small" className="secondary">Copy</Button>
                 </div>
               </ModuleCard>
             ))}
@@ -408,10 +408,10 @@ const VRPage = () => {
 
         {location.state?.fromModuleDetail && (
           <div style={{ marginTop: '20px', padding: '15px', background: '#e3f2fd', borderRadius: '8px' }}>
-            <h4>模組資訊</h4>
-            <p><strong>來源:</strong> Module Detail Page</p>
-            <p><strong>模組 ID:</strong> {location.state.selectedModule?.module_id}</p>
-            <p><strong>類型:</strong> {location.state.selectedModule?.module_type}</p>
+            <h4>Module Information</h4>
+            <p><strong>Source:</strong> Module Detail Page</p>
+            <p><strong>Module ID:</strong> {location.state.selectedModule?.module_id}</p>
+            <p><strong>Type:</strong> {location.state.selectedModule?.module_type}</p>
           </div>
         )}
       </Sidebar>
@@ -431,11 +431,11 @@ const VRPage = () => {
             flexDirection: 'column',
             color: '#666'
           }}>
-            <h2>歡迎使用 MiC VR 查看器</h2>
+            <h2>Welcome to MiC VR Viewer</h2>
             <p>
               {location.state?.fromModuleDetail 
-                ? '正在載入模組 VR 視圖...' 
-                : '請先上傳 Revit 模型文件開始使用'
+                ? 'Loading module VR view...' 
+                : 'Please upload Revit model files to get started'
               }
             </p>
           </div>

@@ -2,17 +2,17 @@ const express = require('express');
 const router = express.Router();
 const { User, USER_ROLES } = require('../models/User');
 
-// 權限定義
+// Permission definitions
 const PERMISSIONS = {
-  READ: 'read',           // 讀取
-  SEARCH: 'search',       // 搜索
-  MODIFY: 'modify',       // 修改
-  ANALYZE: 'analyze',     // 分析
-  COMMENT: 'comment',     // 添加評論
-  DATA_INPUT: 'data_input' // 數據輸入
+  READ: 'read',           // Read
+  SEARCH: 'search',       // Search
+  MODIFY: 'modify',       // Modify
+  ANALYZE: 'analyze',     // Analyze
+  COMMENT: 'comment',     // Add Comments
+  DATA_INPUT: 'data_input' // Data Input
 };
 
-// 角色權限映射
+// Role permission mapping
 const ROLE_PERMISSIONS = {
   [USER_ROLES.DESIGNER]: [
     PERMISSIONS.READ,
@@ -65,16 +65,16 @@ const ROLE_PERMISSIONS = {
   ]
 };
 
-let tokens = {}; // 存儲token和用戶ID的映射
+let tokens = {}; // Store token and user ID mapping
 
-// 生成簡單的token（在實際應用中應該使用JWT）
+// Generate simple token (should use JWT in production)
 const generateToken = (userId) => {
   const token = `token_${userId}_${Date.now()}`;
   tokens[token] = userId;
   return token;
 };
 
-// 驗證token並獲取用戶
+// Verify token and get user
 const getUserFromToken = async (token) => {
   if (!token) return null;
   const userId = tokens[token];
@@ -194,18 +194,18 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// 獲取所有可用角色
+// Get all available roles
 router.get('/roles', (req, res) => {
   const roleDescriptions = {
-    [USER_ROLES.DESIGNER]: '設計方',
-    [USER_ROLES.DEVELOPER]: '開發方',
-    [USER_ROLES.POLICY_MAKER]: '政策制定者',
-    [USER_ROLES.CONTRACTOR]: '承建方',
-    [USER_ROLES.MANUFACTURER]: '制造商',
-    [USER_ROLES.SUBCONTRACTOR]: '分包商',
-    [USER_ROLES.SUPPLIER]: '供應商',
-    [USER_ROLES.OPERATOR]: '運營方',
-    [USER_ROLES.ADMIN]: '系統管理員'
+    [USER_ROLES.DESIGNER]: 'Designer',
+    [USER_ROLES.DEVELOPER]: 'Developer',
+    [USER_ROLES.POLICY_MAKER]: 'Policy Maker',
+    [USER_ROLES.CONTRACTOR]: 'Contractor',
+    [USER_ROLES.MANUFACTURER]: 'Manufacturer',
+    [USER_ROLES.SUBCONTRACTOR]: 'Subcontractor',
+    [USER_ROLES.SUPPLIER]: 'Supplier',
+    [USER_ROLES.OPERATOR]: 'Operator',
+    [USER_ROLES.ADMIN]: 'System Administrator'
   };
 
   const roles = Object.values(USER_ROLES).map(role => ({
@@ -217,22 +217,22 @@ router.get('/roles', (req, res) => {
   res.json({ roles });
 });
 
-// 獲取當前用戶信息
+// Get current user information
 router.get('/me', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
-      return res.status(401).json({ message: '訪問令牌缺失' });
+      return res.status(401).json({ message: 'Access token missing' });
     }
 
     const user = await getUserFromToken(token);
     if (!user) {
-      return res.status(401).json({ message: '用戶不存在或已被禁用' });
+      return res.status(401).json({ message: 'User does not exist or has been disabled' });
     }
 
-    // 返回用戶信息（不包含密碼）
+    // Return user information (without password)
     const userWithoutPassword = user.toJSON();
     delete userWithoutPassword.password;
     userWithoutPassword.permissions = ROLE_PERMISSIONS[user.role] || [];
@@ -242,14 +242,14 @@ router.get('/me', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('獲取用戶信息錯誤:', error);
-    res.status(500).json({ message: '服務器錯誤' });
+    console.error('Get user information error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
-// 登出
+// Logout
 router.post('/logout', (req, res) => {
-  res.json({ message: '登出成功' });
+  res.json({ message: 'Logout successful' });
 });
 
 module.exports = router; 

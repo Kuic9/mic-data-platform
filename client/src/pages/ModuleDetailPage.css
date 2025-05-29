@@ -203,9 +203,9 @@
 }
 
 .attributes-list {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .attribute-item {
@@ -213,6 +213,10 @@
   border-radius: 6px;
   padding: 1rem;
   transition: all 0.3s ease;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  align-items: center;
+  border-left: 4px solid var(--primary-color);
 }
 
 .attribute-item:hover {
