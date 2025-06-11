@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ProjectService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import './HomePage.css';
 
 function HomePage() {
+  const { getAuthHeaders } = useAuth();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,8 +12,16 @@ function HomePage() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const data = await ProjectService.getProjects();
-        setProjects(data);
+        const response = await fetch('/api/projects', {
+          headers: getAuthHeaders()
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setProjects(data);
+        } else {
+          throw new Error('Failed to fetch projects');
+        }
         setLoading(false);
       } catch (err) {
         setError('Failed to load projects. Please try again later.');
@@ -21,7 +30,7 @@ function HomePage() {
     };
 
     fetchProjects();
-  }, []);
+  }, [getAuthHeaders]);
 
   if (loading) {
     return <div className="loading">Loading projects...</div>;

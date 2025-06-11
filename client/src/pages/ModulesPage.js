@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ModuleService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import './ModulesPage.css';
 
 function ModulesPage() {
+  const { getAuthHeaders } = useAuth();
   const [modules, setModules] = useState([]);
   const [filteredModules, setFilteredModules] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,9 +24,17 @@ function ModulesPage() {
   useEffect(() => {
     const fetchModules = async () => {
       try {
-        const modulesData = await ModuleService.getModules();
-        setModules(modulesData);
-        setFilteredModules(modulesData);
+        const response = await fetch('/api/modules', {
+          headers: getAuthHeaders()
+        });
+        
+        if (response.ok) {
+          const modulesData = await response.json();
+          setModules(modulesData);
+          setFilteredModules(modulesData);
+        } else {
+          throw new Error('Failed to fetch modules');
+        }
         setLoading(false);
       } catch (err) {
         setError('Failed to load modules. Please try again later.');
@@ -34,7 +43,7 @@ function ModulesPage() {
     };
 
     fetchModules();
-  }, []);
+  }, [getAuthHeaders]);
 
   // Update filtered modules whenever filters or search query changes
   useEffect(() => {
@@ -207,6 +216,7 @@ function ModulesPage() {
             <div className="module-header">
               <h3 className="module-id">{module.module_id}</h3>
               <div className={`module-status status-pill ${module.status.toLowerCase().replace(' ', '-')}`}>
+                <span className="status-indicator">●</span>
                 {module.status}
               </div>
             </div>

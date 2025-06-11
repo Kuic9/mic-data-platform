@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { PermissionGate } from './auth/ProtectedRoute';
 import { Link, useNavigate } from 'react-router-dom';
+import DataManagement from './DataManagement';
+import DataUpload from './DataUpload';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const { user, logout, hasPermission } = useAuth();
+  const { user, logout, hasPermission, getAuthHeaders } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [projects, setProjects] = useState([]);
@@ -28,7 +30,9 @@ const Dashboard = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('/api/projects');
+      const response = await fetch('/api/projects', {
+        headers: getAuthHeaders()
+      });
       if (response.ok) {
         const data = await response.json();
         setProjects(data);
@@ -48,7 +52,9 @@ const Dashboard = () => {
     if (!hasPermission('read')) return;
     
     try {
-      const response = await fetch('/api/modules');
+      const response = await fetch('/api/modules', {
+        headers: getAuthHeaders()
+      });
       if (response.ok) {
         const data = await response.json();
         setModules(data.slice(0, 10)); // Only show first 10 modules
@@ -148,10 +154,10 @@ const Dashboard = () => {
 
           <PermissionGate permission="data_input">
             <button 
-              className={activeTab === 'input' ? 'active' : ''}
-              onClick={() => setActiveTab('input')}
+              className={activeTab === 'upload' ? 'active' : ''}
+              onClick={() => setActiveTab('upload')}
             >
-              Data Input
+              Data Upload
             </button>
           </PermissionGate>
 
@@ -209,8 +215,8 @@ const Dashboard = () => {
                     </PermissionGate>
                     
                     <PermissionGate permission="data_input">
-                      <button onClick={() => setActiveTab('input')}>
-                        Add Data
+                      <button onClick={() => setActiveTab('upload')}>
+                        Upload Data
                       </button>
                     </PermissionGate>
                   </div>
@@ -342,23 +348,17 @@ const Dashboard = () => {
               <div className="tab-content">
                 <h2>Data Management</h2>
                 <p>Edit and update existing project and module data.</p>
-                <div className="feature-placeholder">
-                  <h3>Feature Under Development</h3>
-                  <p>Data editing interface will be displayed here.</p>
-                </div>
+                <DataManagement />
               </div>
             </PermissionGate>
           )}
 
-          {activeTab === 'input' && (
+          {activeTab === 'upload' && (
             <PermissionGate permission="data_input">
               <div className="tab-content">
-                <h2>Data Input</h2>
+                <h2>Data Upload</h2>
                 <p>Add new project, unit and module data.</p>
-                <div className="feature-placeholder">
-                  <h3>Feature Under Development</h3>
-                  <p>Data input forms will be displayed here.</p>
-                </div>
+                <DataUpload />
               </div>
             </PermissionGate>
           )}

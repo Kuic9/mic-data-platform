@@ -14,20 +14,22 @@
     "init-db": "node src/scripts/initializeData.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "morgan": "^1.10.0",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.0",
-    "sqlite3": "^5.1.6",
+    "cors": "^2.8.5",
+    "csv-parser": "^3.2.0",
     "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "gltf-pipeline": "^4.0.0",
+    "jsonwebtoken": "^9.0.0",
+    "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "sharp": "^0.32.6",
+    "sqlite3": "^5.1.6",
     "three": "^0.158.0",
-    "gltf-pipeline": "^4.0.0"
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22",
-    "concurrently": "^8.0.1"
+    "concurrently": "^8.0.1",
+    "nodemon": "^2.0.22"
   }
-} 
+}

@@ -3,8 +3,16 @@ const { db } = require('../config/database');
 class Unit {
   constructor(unitData) {
     this.id = unitData.id;
-    this.unitId = unitData.unit_id;
-    this.projectId = unitData.project_id;
+    this.unit_id = unitData.unit_id;
+    this.project_id = unitData.project_id;
+    this.unit_type = unitData.unit_type;
+    this.floor_level = unitData.floor_level;
+    this.position = unitData.position;
+    this.area = unitData.area;
+    this.num_modules = unitData.num_modules;
+    this.completion_date = unitData.completion_date;
+    this.status = unitData.status;
+    // Legacy fields for backward compatibility
     this.locationInProject = unitData.location_in_project;
     this.temporalLocation = unitData.temporal_location;
     this.intendedUse = unitData.intended_use;
@@ -18,10 +26,8 @@ class Unit {
     this.dfsConcerns = unitData.dfs_concerns;
     this.floorNumber = unitData.floor_number;
     this.unitNumber = unitData.unit_number;
-    this.area = unitData.area;
     this.bedrooms = unitData.bedrooms;
     this.bathrooms = unitData.bathrooms;
-    this.status = unitData.status;
     this.createdAt = unitData.created_at;
     this.updatedAt = unitData.updated_at;
   }
@@ -31,16 +37,25 @@ class Unit {
     return new Promise((resolve, reject) => {
       const stmt = db.prepare(`
         INSERT INTO units (
-          unit_id, project_id, location_in_project, temporal_location, intended_use,
-          spatial_design, facilities, mep_systems, connections, standard_details,
-          module_conditions, work_methods, dfs_concerns, floor_number, unit_number,
-          area, bedrooms, bathrooms, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          unit_id, project_id, unit_type, floor_level, position, area, 
+          num_modules, completion_date, status, location_in_project, 
+          temporal_location, intended_use, spatial_design, facilities, 
+          mep_systems, connections, standard_details, module_conditions, 
+          work_methods, dfs_concerns, floor_number, unit_number, 
+          bedrooms, bathrooms
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
       stmt.run([
         unitData.unit_id,
         unitData.project_id,
+        unitData.unit_type,
+        unitData.floor_level,
+        unitData.position,
+        unitData.area,
+        unitData.num_modules,
+        unitData.completion_date,
+        unitData.status || 'Planning',
         unitData.location_in_project,
         unitData.temporal_location,
         unitData.intended_use,
@@ -54,10 +69,8 @@ class Unit {
         unitData.dfs_concerns,
         unitData.floor_number,
         unitData.unit_number,
-        unitData.area,
         unitData.bedrooms,
-        unitData.bathrooms,
-        unitData.status
+        unitData.bathrooms
       ], function(err) {
         if (err) {
           reject(err);
@@ -117,9 +130,49 @@ class Unit {
   }
 
   // 獲取所有單元
-  static async findAll() {
+  static async findAll(filters = {}) {
     return new Promise((resolve, reject) => {
-      db.all('SELECT * FROM units ORDER BY created_at DESC', [], (err, rows) => {
+      let query = 'SELECT * FROM units';
+      let params = [];
+      
+      if (Object.keys(filters).length > 0) {
+        const conditions = [];
+        Object.keys(filters).forEach(key => {
+          conditions.push(`${key} = ?`);
+          params.push(filters[key]);
+        });
+        query += ' WHERE ' + conditions.join(' AND ');
+      }
+      
+      query += ' ORDER BY created_at DESC';
+      
+      db.all(query, params, (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          const units = rows.map(row => new Unit(row));
+          resolve(units);
+        }
+      });
+    });
+  }
+
+  // 搜索單元
+  static async search(searchQuery) {
+    return new Promise((resolve, reject) => {
+      const query = `
+        SELECT * FROM units 
+        WHERE unit_id LIKE ? 
+           OR project_id LIKE ? 
+           OR intended_use LIKE ? 
+           OR status LIKE ?
+        ORDER BY created_at DESC
+      `;
+      
+      const searchTerm = `%${searchQuery}%`;
+      const params = [searchTerm, searchTerm, searchTerm, searchTerm];
+
+      db.all(query, params, (err, rows) => {
         if (err) {
           reject(err);
         } else {
@@ -188,8 +241,15 @@ class Unit {
   // 轉換為JSON格式
   toJSON() {
     return {
-      unit_id: this.unitId,
-      project_id: this.projectId,
+      unit_id: this.unit_id,
+      project_id: this.project_id,
+      unit_type: this.unit_type,
+      floor_level: this.floor_level,
+      position: this.position,
+      area: this.area,
+      num_modules: this.num_modules,
+      completion_date: this.completion_date,
+      status: this.status,
       location_in_project: this.locationInProject,
       temporal_location: this.temporalLocation,
       intended_use: this.intendedUse,
@@ -203,10 +263,10 @@ class Unit {
       dfs_concerns: this.dfsConcerns,
       floor_number: this.floorNumber,
       unit_number: this.unitNumber,
-      area: this.area,
       bedrooms: this.bedrooms,
       bathrooms: this.bathrooms,
-      status: this.status
+      created_at: this.createdAt,
+      updated_at: this.updatedAt
     };
   }
 }

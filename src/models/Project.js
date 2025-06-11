@@ -124,6 +124,35 @@ class Project {
     });
   }
 
+  // 搜索項目
+  static async search(searchQuery) {
+    return new Promise((resolve, reject) => {
+      const query = `
+        SELECT * FROM projects 
+        WHERE project_id LIKE ? 
+           OR project_name LIKE ? 
+           OR location LIKE ? 
+           OR client LIKE ?
+           OR contractor LIKE ?
+           OR manufacturer LIKE ?
+           OR project_status LIKE ?
+        ORDER BY created_at DESC
+      `;
+      
+      const searchTerm = `%${searchQuery}%`;
+      const params = [searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm];
+
+      db.all(query, params, (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          const projects = rows.map(row => new Project(row));
+          resolve(projects);
+        }
+      });
+    });
+  }
+
   // 更新項目
   async update(updateData) {
     return new Promise((resolve, reject) => {

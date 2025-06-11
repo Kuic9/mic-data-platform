@@ -3,6 +3,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const path = require('path');
 const fs = require('fs');
+const multer = require('multer');
 
 // Import database configuration and models
 const { initializeDatabase } = require('./src/config/database');
@@ -14,6 +15,12 @@ const ModuleAttribute = require('./src/models/ModuleAttribute');
 // Import routes
 const authRoutes = require('./src/routes/auth-simple');
 const revitRoutes = require('./src/routes/revit');
+const revitModelRoutes = require('./src/routes/revitRoutes');
+const dataRoutes = require('./src/routes/data');
+const uploadRoutes = require('./src/routes/upload');
+
+// Import middleware
+const { authenticateToken, requirePermission } = require('./src/middleware/simple-auth');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -23,6 +30,7 @@ const createDirectories = () => {
   const dirs = [
     path.join(__dirname, 'uploads'),
     path.join(__dirname, 'uploads/revit'),
+    path.join(__dirname, 'uploads/bulk'),
     path.join(__dirname, 'exports'),
     path.join(__dirname, 'temp')
   ];
@@ -52,9 +60,18 @@ app.use('/api/auth', authRoutes);
 // Revit VR routes
 app.use('/api/revit', revitRoutes);
 
+// Revit model management routes
+app.use('/api/revit', authenticateToken, revitModelRoutes);
+
+// Data management routes (protected)
+app.use('/api/data', authenticateToken, dataRoutes);
+
+// Upload routes (protected)
+app.use('/api/upload', authenticateToken, uploadRoutes);
+
 // API Routes
 // Get all projects
-app.get('/api/projects', async (req, res) => {
+app.get('/api/projects', authenticateToken, requirePermission('read'), async (req, res) => {
   try {
     const projects = await Project.findAll();
     res.json(projects.map(project => project.toJSON()));
@@ -64,8 +81,51 @@ app.get('/api/projects', async (req, res) => {
   }
 });
 
+// Create new project
+app.post('/api/projects', authenticateToken, requirePermission('data_input'), async (req, res) => {
+  try {
+    const project = await Project.create(req.body);
+    res.status(201).json(project.toJSON());
+  } catch (error) {
+    console.error('Error creating project:', error);
+    res.status(500).json({ message: 'Failed to create project' });
+  }
+});
+
+// Update project
+app.put('/api/projects/:projectId', authenticateToken, requirePermission('modify'), async (req, res) => {
+  try {
+    const project = await Project.findByProjectId(req.params.projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    
+    await project.update(req.body);
+    res.json(project.toJSON());
+  } catch (error) {
+    console.error('Error updating project:', error);
+    res.status(500).json({ message: 'Failed to update project' });
+  }
+});
+
+// Delete project
+app.delete('/api/projects/:projectId', authenticateToken, requirePermission('modify'), async (req, res) => {
+  try {
+    const project = await Project.findByProjectId(req.params.projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    
+    await project.delete();
+    res.json({ message: 'Project deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting project:', error);
+    res.status(500).json({ message: 'Failed to delete project' });
+  }
+});
+
 // Get specific project by ID
-app.get('/api/projects/:id', async (req, res) => {
+app.get('/api/projects/:id', authenticateToken, requirePermission('read'), async (req, res) => {
   try {
     const project = await Project.findByProjectId(req.params.id);
     if (!project) {
@@ -79,7 +139,7 @@ app.get('/api/projects/:id', async (req, res) => {
 });
 
 // Get units for a specific project
-app.get('/api/projects/:projectId/units', async (req, res) => {
+app.get('/api/projects/:projectId/units', authenticateToken, requirePermission('read'), async (req, res) => {
   try {
     const units = await Unit.findByProjectId(req.params.projectId);
     res.json(units.map(unit => unit.toJSON()));
@@ -89,10 +149,39 @@ app.get('/api/projects/:projectId/units', async (req, res) => {
   }
 });
 
-// Get specific unit by ID
-app.get('/api/units/:id', async (req, res) => {
+// Get all units
+app.get('/api/units', authenticateToken, requirePermission('read'), async (req, res) => {
   try {
-    const unit = await Unit.findByUnitId(req.params.id);
+    const { project_id, unit_type, status } = req.query;
+    
+    const filters = {};
+    if (project_id) filters.project_id = project_id;
+    if (unit_type) filters.unit_type = unit_type;
+    if (status) filters.status = status;
+    
+    const units = await Unit.findAll(filters);
+    res.json(units.map(unit => unit.toJSON()));
+  } catch (error) {
+    console.error('Error fetching units:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Create new unit
+app.post('/api/units', authenticateToken, requirePermission('data_input'), async (req, res) => {
+  try {
+    const unit = await Unit.create(req.body);
+    res.status(201).json(unit.toJSON());
+  } catch (error) {
+    console.error('Error creating unit:', error);
+    res.status(500).json({ message: 'Failed to create unit' });
+  }
+});
+
+// Get specific unit by ID
+app.get('/api/units/:unitId', authenticateToken, requirePermission('read'), async (req, res) => {
+  try {
+    const unit = await Unit.findByUnitId(req.params.unitId);
     if (!unit) {
       return res.status(404).json({ message: 'Unit not found' });
     }
@@ -103,8 +192,40 @@ app.get('/api/units/:id', async (req, res) => {
   }
 });
 
+// Update unit
+app.put('/api/units/:unitId', authenticateToken, requirePermission('modify'), async (req, res) => {
+  try {
+    const unit = await Unit.findByUnitId(req.params.unitId);
+    if (!unit) {
+      return res.status(404).json({ message: 'Unit not found' });
+    }
+    
+    await unit.update(req.body);
+    res.json(unit.toJSON());
+  } catch (error) {
+    console.error('Error updating unit:', error);
+    res.status(500).json({ message: 'Failed to update unit' });
+  }
+});
+
+// Delete unit
+app.delete('/api/units/:unitId', authenticateToken, requirePermission('modify'), async (req, res) => {
+  try {
+    const unit = await Unit.findByUnitId(req.params.unitId);
+    if (!unit) {
+      return res.status(404).json({ message: 'Unit not found' });
+    }
+    
+    await unit.delete();
+    res.json({ message: 'Unit deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting unit:', error);
+    res.status(500).json({ message: 'Failed to delete unit' });
+  }
+});
+
 // Get modules for a specific unit
-app.get('/api/units/:unitId/modules', async (req, res) => {
+app.get('/api/units/:unitId/modules', authenticateToken, requirePermission('read'), async (req, res) => {
   try {
     const modules = await Module.findByUnitId(req.params.unitId);
     res.json(modules.map(module => module.toJSON()));
@@ -115,15 +236,15 @@ app.get('/api/units/:unitId/modules', async (req, res) => {
 });
 
 // Get specific module by ID
-app.get('/api/modules/:id', async (req, res) => {
+app.get('/api/modules/:moduleId', authenticateToken, requirePermission('read'), async (req, res) => {
   try {
-    const module = await Module.findByModuleId(req.params.id);
+    const module = await Module.findByModuleId(req.params.moduleId);
     if (!module) {
       return res.status(404).json({ message: 'Module not found' });
     }
 
     // Get associated attributes
-    const attributes = await ModuleAttribute.findByModuleId(req.params.id);
+    const attributes = await ModuleAttribute.findByModuleId(req.params.moduleId);
     
     // Return module with its attributes
     const moduleData = module.toJSON();
@@ -137,7 +258,7 @@ app.get('/api/modules/:id', async (req, res) => {
 });
 
 // Get all modules
-app.get('/api/modules', async (req, res) => {
+app.get('/api/modules', authenticateToken, requirePermission('read'), async (req, res) => {
   try {
     // Allow filtering by module_type, status, material, etc.
     const { module_type, status, major_material, intended_use } = req.query;
@@ -156,8 +277,51 @@ app.get('/api/modules', async (req, res) => {
   }
 });
 
+// Create new module
+app.post('/api/modules', authenticateToken, requirePermission('data_input'), async (req, res) => {
+  try {
+    const module = await Module.create(req.body);
+    res.status(201).json(module.toJSON());
+  } catch (error) {
+    console.error('Error creating module:', error);
+    res.status(500).json({ message: 'Failed to create module' });
+  }
+});
+
+// Update module
+app.put('/api/modules/:moduleId', authenticateToken, requirePermission('modify'), async (req, res) => {
+  try {
+    const module = await Module.findByModuleId(req.params.moduleId);
+    if (!module) {
+      return res.status(404).json({ message: 'Module not found' });
+    }
+    
+    await module.update(req.body);
+    res.json(module.toJSON());
+  } catch (error) {
+    console.error('Error updating module:', error);
+    res.status(500).json({ message: 'Failed to update module' });
+  }
+});
+
+// Delete module
+app.delete('/api/modules/:moduleId', authenticateToken, requirePermission('modify'), async (req, res) => {
+  try {
+    const module = await Module.findByModuleId(req.params.moduleId);
+    if (!module) {
+      return res.status(404).json({ message: 'Module not found' });
+    }
+    
+    await module.delete();
+    res.json({ message: 'Module deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting module:', error);
+    res.status(500).json({ message: 'Failed to delete module' });
+  }
+});
+
 // Search modules
-app.get('/api/search/modules', async (req, res) => {
+app.get('/api/search/modules', authenticateToken, requirePermission('search'), async (req, res) => {
   try {
     const { query } = req.query;
     

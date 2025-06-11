@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { User, USER_ROLES } = require('../models/User');
+const { setTokens, getTokens } = require('../middleware/simple-auth');
 
 // Permission definitions
 const PERMISSIONS = {
@@ -65,12 +66,13 @@ const ROLE_PERMISSIONS = {
   ]
 };
 
-let tokens = {}; // Store token and user ID mapping
+let tokens = getTokens(); // Get shared token storage
 
 // Generate simple token (should use JWT in production)
 const generateToken = (userId) => {
   const token = `token_${userId}_${Date.now()}`;
   tokens[token] = userId;
+  setTokens(tokens); // Update shared token storage
   return token;
 };
 

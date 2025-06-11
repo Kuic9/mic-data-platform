@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ModuleService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import './ModuleDetailPage.css';
 
 function ModuleDetailPage() {
   const { moduleId } = useParams();
   const navigate = useNavigate();
+  const { getAuthHeaders } = useAuth();
   const [module, setModule] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,8 +14,16 @@ function ModuleDetailPage() {
   useEffect(() => {
     const fetchModuleData = async () => {
       try {
-        const moduleData = await ModuleService.getModule(moduleId);
-        setModule(moduleData);
+        const response = await fetch(`/api/modules/${moduleId}`, {
+          headers: getAuthHeaders()
+        });
+        
+        if (response.ok) {
+          const moduleData = await response.json();
+          setModule(moduleData);
+        } else {
+          throw new Error('Failed to fetch module data');
+        }
         setLoading(false);
       } catch (err) {
         setError('Failed to load module data. Please try again later.');
@@ -23,7 +32,7 @@ function ModuleDetailPage() {
     };
 
     fetchModuleData();
-  }, [moduleId]);
+  }, [moduleId, getAuthHeaders]);
 
   const handleVRView = () => {
     // Navigate to VR page and pass module information as state
@@ -153,12 +162,23 @@ function ModuleDetailPage() {
               </p>
             </div>
             
-            <div className="detail-box">
-              <h3 className="section-title">Module Status</h3>
-              <p className="maintenance-text">
-                Current Status: {module.status}<br/>
-                Unit ID: {module.unit_id}
-              </p>
+            <div className="detail-box status-highlight-box">
+              <h3 className="section-title">Current Status</h3>
+              <div className="status-info-container">
+                <div className={`large-status-badge status-${module.status.toLowerCase().replace(' ', '-')}`}>
+                  <span className="status-icon">●</span>
+                  <span className="status-text">{module.status}</span>
+                </div>
+                <div className="status-description">
+                  <p className="status-explanation">
+                    {module.status === 'In Use' && 'Module is currently installed and in active use'}
+                    {module.status === 'Available' && 'Module is available for installation and reuse'}
+                    {module.status === 'Maintenance' && 'Module is currently under maintenance or repair'}
+                    {module.status === 'Decommissioned' && 'Module has been decommissioned and is no longer in service'}
+                  </p>
+                  <p className="unit-location">Location: Unit {module.unit_id}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -198,9 +218,12 @@ function ModuleDetailPage() {
               </div>
             )}
             
-            <div className="timeline-item">
+            <div className={`timeline-item current-status-item status-${module.status.toLowerCase().replace(' ', '-')}`}>
               <div className="timeline-date">Current</div>
-              <div className="timeline-event">{module.status}</div>
+              <div className="timeline-event">
+                <span className="timeline-status-indicator">●</span>
+                {module.status}
+              </div>
               <div className="timeline-desc">
                 {module.status === 'In Use' && 'Module is currently in use'}
                 {module.status === 'Available' && 'Module is available for reuse'}

@@ -237,15 +237,15 @@ class Module {
       major_material: this.majorMaterial,
       intended_use: this.intendedUse,
       status: this.status,
-      dimensions: {
-        length: this.dimensionsLength,
-        width: this.dimensionsWidth,
-        height: this.dimensionsHeight
-      },
+      dimensions_length: this.dimensionsLength,
+      dimensions_width: this.dimensionsWidth,
+      dimensions_height: this.dimensionsHeight,
       weight: this.weight,
       installation_date: this.installationDate,
       quality_grade: this.qualityGrade,
-      certification: this.certification
+      certification: this.certification,
+      created_at: this.createdAt,
+      updated_at: this.updatedAt
     };
   }
 }

@@ -1,15 +1,52 @@
-const jwt = require('jsonwebtoken');
-const { User, PERMISSIONS } = require('../models/User');
+const { User } = require('../models/User');
 
-// JWT密鑰（在生產環境中應該使用環境變量）
-const JWT_SECRET = process.env.JWT_SECRET || 'mic_data_platform_jwt_secret_key_2024';
+// 共享token存储（与auth-simple.js保持一致）
+// 在生产环境中应该使用Redis或数据库存储
+let tokens = {};
 
-// 生成JWT令牌
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
+// 权限定义
+const ROLE_PERMISSIONS = {
+  'designer': ['read', 'search', 'modify', 'analyze', 'comment'],
+  'developer': ['read', 'search', 'analyze'],
+  'policy_maker': ['read', 'search', 'analyze'],
+  'contractor': ['read', 'search', 'modify', 'comment'],
+  'manufacturer': ['read', 'search', 'data_input'],
+  'subcontractor': ['read', 'search'],
+  'supplier': ['read', 'search'],
+  'operator': ['read', 'search', 'modify'],
+  'admin': ['read', 'search', 'modify', 'analyze', 'comment', 'data_input']
 };
 
-// 驗證JWT令牌中間件
+// 设置token存储（用于在不同模块间共享token）
+const setTokens = (tokenStore) => {
+  tokens = tokenStore;
+};
+
+// 获取token存储
+const getTokens = () => {
+  return tokens;
+};
+
+// 从token获取用户
+const getUserFromToken = async (token) => {
+  if (!token) return null;
+  const userId = tokens[token];
+  if (!userId) return null;
+  
+  try {
+    const user = await User.findById(userId);
+    if (user) {
+      // 添加权限到用户对象
+      user.permissions = ROLE_PERMISSIONS[user.role] || [];
+    }
+    return user;
+  } catch (error) {
+    console.error('Error getting user from token:', error);
+    return null;
+  }
+};
+
+// 认证中间件
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -19,21 +56,20 @@ const authenticateToken = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.userId);
-    
+    const user = await getUserFromToken(token);
     if (!user) {
-      return res.status(401).json({ message: 'Invalid token' });
+      return res.status(401).json({ message: 'Invalid token or user not found' });
     }
 
     req.user = user;
     next();
   } catch (error) {
+    console.error('Authentication error:', error);
     return res.status(403).json({ message: 'Invalid or expired token' });
   }
 };
 
-// 權限檢查中間件工廠函數
+// 权限检查中间件
 const requirePermission = (permission) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -55,7 +91,7 @@ const requirePermission = (permission) => {
   };
 };
 
-// 檢查多個權限（任一即可）
+// 检查多个权限（任一即可）
 const requireAnyPermission = (permissions) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -85,7 +121,7 @@ const requireAnyPermission = (permissions) => {
   };
 };
 
-// 檢查所有權限（必須全部擁有）
+// 检查所有权限（必须全部拥有）
 const requireAllPermissions = (permissions) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -115,7 +151,7 @@ const requireAllPermissions = (permissions) => {
   };
 };
 
-// 角色檢查中間件工廠函數
+// 角色检查中间件
 const requireRole = (roles) => {
   const roleArray = Array.isArray(roles) ? roles : [roles];
   
@@ -136,7 +172,7 @@ const requireRole = (roles) => {
   };
 };
 
-// 檢查是否為管理員
+// 检查是否为管理员
 const requireAdmin = (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Authentication required' });
@@ -152,36 +188,15 @@ const requireAdmin = (req, res, next) => {
   }
 };
 
-// 可選認證中間件（不強制要求登錄）
-const optionalAuth = async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (token) {
-      const decoded = jwt.verify(token, JWT_SECRET);
-      const user = await User.findById(decoded.userId);
-      
-      if (user && user.isActive) {
-        req.user = user;
-      }
-    }
-    
-    next();
-  } catch (error) {
-    // 忽略錯誤，繼續處理請求
-    next();
-  }
-};
-
 module.exports = {
-  generateToken,
   authenticateToken,
   requirePermission,
   requireAnyPermission,
   requireAllPermissions,
   requireRole,
   requireAdmin,
-  optionalAuth,
-  JWT_SECRET
+  setTokens,
+  getTokens,
+  getUserFromToken,
+  ROLE_PERMISSIONS
 }; 

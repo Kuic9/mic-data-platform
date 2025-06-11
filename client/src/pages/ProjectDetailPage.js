@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ProjectService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import './ProjectDetailPage.css';
 
 function ProjectDetailPage() {
   const { projectId } = useParams();
+  const { getAuthHeaders } = useAuth();
   const [project, setProject] = useState(null);
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,13 +15,26 @@ function ProjectDetailPage() {
     const fetchProjectData = async () => {
       try {
         // Fetch both project details and its units in parallel
-        const [projectData, unitsData] = await Promise.all([
-          ProjectService.getProject(projectId),
-          ProjectService.getProjectUnits(projectId)
+        const [projectResponse, unitsResponse] = await Promise.all([
+          fetch(`/api/projects/${projectId}`, {
+            headers: getAuthHeaders()
+          }),
+          fetch(`/api/projects/${projectId}/units`, {
+            headers: getAuthHeaders()
+          })
         ]);
         
-        setProject(projectData);
-        setUnits(unitsData);
+        if (projectResponse.ok && unitsResponse.ok) {
+          const [projectData, unitsData] = await Promise.all([
+            projectResponse.json(),
+            unitsResponse.json()
+          ]);
+          
+          setProject(projectData);
+          setUnits(unitsData);
+        } else {
+          throw new Error('Failed to fetch project data');
+        }
         setLoading(false);
       } catch (err) {
         setError('Failed to load project data. Please try again later.');
@@ -29,7 +43,7 @@ function ProjectDetailPage() {
     };
 
     fetchProjectData();
-  }, [projectId]);
+  }, [projectId, getAuthHeaders]);
 
   if (loading) {
     return <div className="loading">Loading project details...</div>;

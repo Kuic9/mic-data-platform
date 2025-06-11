@@ -6,6 +6,19 @@ import './Header.css';
 function Header() {
   const { user, logout } = useAuth();
 
+  // Role display names mapping
+  const roleDisplayNames = {
+    'admin': 'Administrator',
+    'designer': 'Designer',
+    'developer': 'Developer',
+    'policy_maker': 'Policy Maker',
+    'contractor': 'Contractor',
+    'manufacturer': 'Manufacturer',
+    'subcontractor': 'Subcontractor',
+    'supplier': 'Supplier',
+    'operator': 'Operator'
+  };
+
   const handleLogout = async () => {
     await logout();
   };
@@ -50,11 +63,11 @@ function Header() {
             }}
           />
           <div className="user-info-dropdown">
-            <span className="user-name">{user?.fullName || '用戶'}</span>
-            <span className="user-role">({user?.role || '未知角色'})</span>
+            <span className="user-name">{user?.fullName || 'User'}</span>
+            <span className="user-role">({roleDisplayNames[user?.role] || 'Unknown Role'})</span>
             <div className="dropdown-menu">
-              <Link to="/dashboard" className="dropdown-item">儀表板</Link>
-              <button onClick={handleLogout} className="dropdown-item logout-item">登出</button>
+              <Link to="/dashboard" className="dropdown-item">Dashboard</Link>
+              <button onClick={handleLogout} className="dropdown-item logout-item">Logout</button>
             </div>
           </div>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

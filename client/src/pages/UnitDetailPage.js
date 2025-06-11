@@ -1,26 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { UnitService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import RevitModelUploader from '../components/RevitModelUploader';
 import './UnitDetailPage.css';
 
 function UnitDetailPage() {
   const { unitId } = useParams();
+  const { getAuthHeaders } = useAuth();
   const [unit, setUnit] = useState(null);
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showModelUploader, setShowModelUploader] = useState(false);
+  const [unitModels, setUnitModels] = useState([]);
 
   useEffect(() => {
     const fetchUnitData = async () => {
       try {
         // Fetch both unit details and its modules in parallel
-        const [unitData, modulesData] = await Promise.all([
-          UnitService.getUnit(unitId),
-          UnitService.getUnitModules(unitId)
+        const [unitResponse, modulesResponse] = await Promise.all([
+          fetch(`/api/units/${unitId}`, {
+            headers: getAuthHeaders()
+          }),
+          fetch(`/api/units/${unitId}/modules`, {
+            headers: getAuthHeaders()
+          })
         ]);
         
-        setUnit(unitData);
-        setModules(modulesData);
+        if (unitResponse.ok && modulesResponse.ok) {
+          const [unitData, modulesData] = await Promise.all([
+            unitResponse.json(),
+            modulesResponse.json()
+          ]);
+          
+          setUnit(unitData);
+          setModules(modulesData);
+        } else {
+          throw new Error('Failed to fetch unit data');
+        }
         setLoading(false);
       } catch (err) {
         setError('Failed to load unit data. Please try again later.');
@@ -29,7 +46,27 @@ function UnitDetailPage() {
     };
 
     fetchUnitData();
-  }, [unitId]);
+    fetchUnitModels();
+  }, [unitId, getAuthHeaders]);
+
+  const fetchUnitModels = async () => {
+    try {
+      const response = await fetch(`/api/units/${unitId}/models`, {
+        headers: getAuthHeaders()
+      });
+      if (response.ok) {
+        const modelsData = await response.json();
+        setUnitModels(modelsData);
+      }
+    } catch (err) {
+      console.error('Failed to fetch unit models:', err);
+    }
+  };
+
+  const handleModelUploadComplete = (newModel) => {
+    setUnitModels(prev => [...prev, newModel]);
+    setShowModelUploader(false);
+  };
 
   if (loading) {
     return <div className="loading">Loading unit details...</div>;
@@ -93,17 +130,75 @@ function UnitDetailPage() {
           </div>
           
           <div className="unit-schematic">
-            <h3 className="schematic-title">Unit Schematic</h3>
-            <div className="schematic-placeholder">
-              <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                <path d="M3 9h18"></path>
-                <path d="M9 21V9"></path>
-              </svg>
-              <span>Unit floor plan would appear here</span>
+            <div className="schematic-header">
+              <h3 className="schematic-title">Unit 3D Model & Schematic</h3>
+              <button 
+                className="btn-upload-model"
+                onClick={() => setShowModelUploader(!showModelUploader)}
+              >
+                {showModelUploader ? 'Close Uploader' : 'Upload 3D Model'}
+              </button>
             </div>
+            
+            {unitModels.length > 0 ? (
+              <div className="unit-models-display">
+                {unitModels.map((model, index) => (
+                  <div key={index} className="model-display-item">
+                    <div className="model-preview-small">
+                      {model.format === '.ifc' ? (
+                        <iframe 
+                          src={`/api/revit/viewer/${model.id}`}
+                          title="Unit Model Viewer"
+                          width="100%" 
+                          height="200px"
+                        />
+                      ) : (
+                        <model-viewer
+                          src={model.url}
+                          alt={model.name}
+                          auto-rotate
+                          camera-controls
+                          style={{ width: '100%', height: '200px' }}
+                        />
+                      )}
+                    </div>
+                    <div className="model-info-small">
+                      <h4>{model.name}</h4>
+                      <p>格式: {model.format}</p>
+                      <div className="model-actions-small">
+                        <button 
+                          className="btn-view-full"
+                          onClick={() => window.open(`/vr?model=${model.id}`, '_blank')}
+                        >
+                          Full View
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="schematic-placeholder">
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                  <path d="M3 9h18"></path>
+                  <path d="M9 21V9"></path>
+                </svg>
+                <span>Upload your Revit model to display here</span>
+              </div>
+            )}
           </div>
         </div>
+
+        {showModelUploader && (
+          <div className="model-uploader-section">
+            <RevitModelUploader 
+              projectId={unit.project_id}
+              unitId={unitId}
+              onUploadComplete={handleModelUploadComplete}
+            />
+          </div>
+        )}
 
         <div className="modules-section">
           <div className="section-header">
@@ -117,6 +212,7 @@ function UnitDetailPage() {
                 <div className="module-header">
                   <h3 className="module-id">{module.module_id}</h3>
                   <div className={`module-status status-pill ${module.status.toLowerCase().replace(' ', '-')}`}>
+                    <span className="status-indicator">●</span>
                     {module.status}
                   </div>
                 </div>
