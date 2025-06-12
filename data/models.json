@@ -1,0 +1,62 @@
+[
+  [
+    "model_1749723977612_emjnvjuyr",
+    {
+      "id": "model_1749723977612_emjnvjuyr",
+      "name": "unit3.ifc",
+      "format": ".ifc",
+      "size": 26245,
+      "path": "E:\\RA\\MIC\\MiC_platform\\Project_MiC\\mic-data-platform\\uploads\\models\\model-1749723977610-698959910.ifc",
+      "url": "/api/revit/models/model_1749723977612_emjnvjuyr/file",
+      "projectId": "PRJ001",
+      "unitId": "UNIT001",
+      "uploadTime": "2025-06-12T10:26:17.612Z",
+      "status": "uploaded"
+    }
+  ],
+  [
+    "model_1749724267100_16d9rt2z3",
+    {
+      "id": "model_1749724267100_16d9rt2z3",
+      "name": "unit3.ifc",
+      "format": ".ifc",
+      "size": 26245,
+      "path": "E:\\RA\\MIC\\MiC_platform\\Project_MiC\\mic-data-platform\\uploads\\models\\model-1749724267099-503926199.ifc",
+      "url": "/api/viewer/models/model_1749724267100_16d9rt2z3/file",
+      "projectId": "PRJ001",
+      "unitId": "UNIT001",
+      "uploadTime": "2025-06-12T10:31:07.100Z",
+      "status": "uploaded"
+    }
+  ],
+  [
+    "model_1749724652042_yq6as8aj4",
+    {
+      "id": "model_1749724652042_yq6as8aj4",
+      "name": "unit3.ifc",
+      "format": ".ifc",
+      "size": 26245,
+      "path": "E:\\RA\\MIC\\MiC_platform\\Project_MiC\\mic-data-platform\\uploads\\models\\model-1749724652041-118871835.ifc",
+      "url": "/api/viewer/models/model_1749724652042_yq6as8aj4/file",
+      "projectId": "PRJ001",
+      "unitId": "UNIT001",
+      "uploadTime": "2025-06-12T10:37:32.042Z",
+      "status": "uploaded"
+    }
+  ],
+  [
+    "model_1749724670643_obxq1irum",
+    {
+      "id": "model_1749724670643_obxq1irum",
+      "name": "unit3.ifc",
+      "format": ".ifc",
+      "size": 26245,
+      "path": "E:\\RA\\MIC\\MiC_platform\\Project_MiC\\mic-data-platform\\uploads\\models\\model-1749724670640-13003858.ifc",
+      "url": "/api/viewer/models/model_1749724670643_obxq1irum/file",
+      "projectId": "PRJ001",
+      "unitId": "UNIT001",
+      "uploadTime": "2025-06-12T10:37:50.643Z",
+      "status": "uploaded"
+    }
+  ]
+]

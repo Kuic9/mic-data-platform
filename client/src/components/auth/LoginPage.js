@@ -89,7 +89,7 @@ const LoginPage = () => {
           <p>Don't have an account? <Link to="/register">Register now</Link></p>
         </div>
 
-        <div className="platform-info">
+        <div className="role-description">
           <h3>Platform User Role Description</h3>
           <div className="role-grid">
             <div className="role-item">

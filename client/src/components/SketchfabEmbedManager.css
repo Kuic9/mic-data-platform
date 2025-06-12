@@ -1,0 +1,348 @@
+/* Sketchfab嵌入管理器樣式 */
+.sketchfab-embed-manager {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 管理器標題區 */
+.manager-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #1caad9 0%, #17a2b8 100%);
+  border-radius: 12px;
+  color: white;
+}
+
+.manager-header h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.manager-header p {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* 按鈕樣式 */
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #6c757d, #495057);
+  color: white;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 表單區域 */
+.add-form-section {
+  margin-bottom: 2rem;
+}
+
+.form-card {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid #dee2e6;
+}
+
+.form-card h4 {
+  margin: 0 0 1.5rem 0;
+  color: #495057;
+  font-size: 1.3rem;
+}
+
+.iframe-instructions {
+  background: rgba(23, 162, 184, 0.1);
+  border-left: 4px solid #17a2b8;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0 8px 8px 0;
+}
+
+.iframe-instructions h5 {
+  margin: 0 0 0.5rem 0;
+  color: #17a2b8;
+  font-size: 1rem;
+}
+
+.iframe-instructions ol {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.iframe-instructions li {
+  margin-bottom: 0.5rem;
+  color: #495057;
+}
+
+.iframe-instructions code {
+  background: rgba(23, 162, 184, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+/* 表單樣式 */
+.add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #17a2b8;
+  box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+/* 模型列表區域 */
+.models-section {
+  margin-top: 2rem;
+}
+
+.section-header {
+  margin-bottom: 1.5rem;
+}
+
+.section-header h4 {
+  margin: 0;
+  color: #495057;
+  font-size: 1.3rem;
+}
+
+/* 載入和空狀態 */
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #6c757d;
+}
+
+.empty-state {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 12px;
+  border: 2px dashed #dee2e6;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state h5 {
+  margin: 0 0 0.5rem 0;
+  color: #495057;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* 模型網格 */
+.models-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 2rem;
+}
+
+/* 模型卡片 */
+.model-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
+}
+
+.model-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* 模型預覽 */
+.model-preview {
+  position: relative;
+  height: 250px;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.iframe-container {
+  width: 100%;
+  height: 100%;
+}
+
+.iframe-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* 模型資訊 */
+.model-info {
+  padding: 1.5rem;
+}
+
+.model-name {
+  margin: 0 0 0.5rem 0;
+  color: #495057;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.model-description {
+  margin: 0 0 1rem 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.model-meta {
+  margin-bottom: 1rem;
+}
+
+.model-date {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+/* 模型操作按鈕 */
+.model-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-view {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+}
+
+.btn-view:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+}
+
+.btn-delete:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .sketchfab-embed-manager {
+    padding: 1rem;
+  }
+  
+  .manager-header {
+    padding: 1.5rem;
+  }
+  
+  .manager-header h3 {
+    font-size: 1.5rem;
+  }
+  
+  .form-card {
+    padding: 1.5rem;
+  }
+  
+  .models-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .btn {
+    justify-content: center;
+  }
+} 

@@ -12,11 +12,13 @@ class RevitService {
    */
   async uploadRevitFile(file, options = {}) {
     const formData = new FormData();
-    formData.append('revitFile', file);
-    formData.append('options', JSON.stringify(options));
+    formData.append('model', file);
+    formData.append('projectId', options.projectId || 'PRJ001');
+    formData.append('unitId', options.unitId || 'UNIT001');
+    formData.append('fileName', file.name);
 
     try {
-      const response = await axios.post(`${this.baseURL}/api/revit/upload`, formData, {
+      const response = await axios.post(`${this.baseURL}/api/viewer/upload-model`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -40,7 +42,7 @@ class RevitService {
    */
   async getConvertedModels() {
     try {
-      const response = await axios.get(`${this.baseURL}/api/revit/models`);
+      const response = await axios.get(`${this.baseURL}/api/viewer/public-models`);
       return response.data;
     } catch (error) {
       console.error('獲取模型列表失敗:', error);
@@ -68,7 +70,7 @@ class RevitService {
    */
   async getMicModules(modelId) {
     try {
-      const response = await axios.get(`${this.baseURL}/api/revit/models/${modelId}/mic-modules`);
+      const response = await axios.get(`${this.baseURL}/api/viewer/public-models/${modelId}/mic-modules`);
       return response.data;
     } catch (error) {
       console.error('獲取 MiC 模組失敗:', error);

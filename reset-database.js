@@ -172,4 +172,35 @@ db.serialize(() => {
       });
     }
   });
-}); 
+});
+
+// 保存或創建sketchfab模型數據
+const preserveSketchfabEmbeds = async () => {
+  const sketchfabPath = path.join(__dirname, 'data', 'sketchfab_embeds.json');
+  try {
+    if (fs.existsSync(sketchfabPath)) {
+      console.log('🎨 保留現有的Sketchfab模型數據');
+      // 如果文件存在，我們不需要做任何事情
+      // 如果需要備份，可以添加備份代碼
+      const backupPath = path.join(__dirname, 'data', `sketchfab_embeds_backup_${Date.now()}.json`);
+      fs.copyFileSync(sketchfabPath, backupPath);
+      console.log(`✅ Sketchfab模型數據已備份到: ${backupPath}`);
+    } else {
+      // 如果文件不存在，創建空數據
+      fs.writeFileSync(sketchfabPath, '[]', 'utf8');
+      console.log('✅ 創建了空的Sketchfab模型數據文件');
+    }
+  } catch (error) {
+    console.error('❌ 處理Sketchfab模型數據時出錯:', error);
+  }
+};
+
+// Main execution
+createDirectories()
+  .then(() => initializeDatabase())
+  .then(() => initializeDefaultUsers())
+  .then(() => initializeDefaultProjects())
+  .then(() => preserveSketchfabEmbeds())
+  .catch(error => {
+    console.error('❌ 重置數據庫時出錯:', error);
+  }); 

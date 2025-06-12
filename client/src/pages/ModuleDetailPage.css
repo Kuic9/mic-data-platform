@@ -1,14 +1,13 @@
 .module-detail-container {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 2rem 1.5rem;
 }
 
 .module-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 2rem 0;
-  border-bottom: 1px solid var(--border-color);
   margin-bottom: 2rem;
 }
 
@@ -22,6 +21,34 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.sketchfab-view-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.sketchfab-view-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.sketchfab-view-button:active {
+  transform: translateY(0);
+}
+
+.sketchfab-view-button svg {
+  stroke: currentColor;
 }
 
 .vr-view-button {
@@ -53,42 +80,67 @@
 }
 
 .module-title {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  color: var(--primary-color);
+  color: #2d3748;
   margin: 0;
 }
 
-.module-status-badge {
-  padding: 0.5rem 1.2rem;
+/* 統一的標籤設計 */
+.status-pill, .module-status-badge {
+  padding: 0.5rem 1rem;
   border-radius: 50px;
   font-size: 0.85rem;
   font-weight: 600;
   color: white;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
 }
 
-.status-available {
+/* 各種狀態的色彩和視覺效果 */
+.status-active, .status-pill.active {
   background: linear-gradient(135deg, #48bb78, #38a169);
-  box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+  box-shadow: 0 3px 10px rgba(72, 187, 120, 0.3);
 }
 
-.status-in-use {
+.status-in-use, .status-pill.in-use {
   background: linear-gradient(135deg, #667eea, #764ba2);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
 }
 
-.status-maintenance {
+.status-maintenance, .status-pill.maintenance {
   background: linear-gradient(135deg, #ed8936, #dd6b20);
-  box-shadow: 0 4px 15px rgba(237, 137, 54, 0.3);
+  box-shadow: 0 3px 10px rgba(237, 137, 54, 0.3);
 }
 
-.status-decommissioned {
+.status-decommissioned, .status-pill.decommissioned {
   background: linear-gradient(135deg, #e53e3e, #c53030);
-  box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
+  box-shadow: 0 3px 10px rgba(229, 62, 62, 0.3);
+}
+
+.status-unknown, .status-pill.unknown {
+  background: linear-gradient(135deg, #718096, #4A5568);
+  box-shadow: 0 3px 10px rgba(113, 128, 150, 0.3);
+}
+
+/* 狀態點的動畫效果 */
+.status-indicator, .status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
+  animation: statusPulse 2s infinite;
+}
+
+@keyframes statusPulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 /* Hover effects for status badge */
@@ -162,14 +214,14 @@
 }
 
 /* Large status badge color variations */
-.large-status-badge.status-available {
+.large-status-badge.status-active {
   background: linear-gradient(135deg, #48bb78, #38a169);
   box-shadow: 0 4px 20px rgba(72, 187, 120, 0.4);
 }
 
 .large-status-badge.status-in-use {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #4299e1, #3182ce);
+  box-shadow: 0 4px 20px rgba(66, 153, 225, 0.4);
 }
 
 .large-status-badge.status-maintenance {
@@ -225,12 +277,12 @@
   animation: statusGlow 3s infinite;
 }
 
-.current-status-item.status-available::before {
+.current-status-item.status-active::before {
   background: linear-gradient(135deg, #48bb78, #38a169);
 }
 
 .current-status-item.status-in-use::before {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #4299e1, #3182ce);
 }
 
 .current-status-item.status-maintenance::before {
@@ -253,12 +305,12 @@
   animation: statusPulse 2s infinite;
 }
 
-.current-status-item.status-available .timeline-status-indicator {
+.current-status-item.status-active .timeline-status-indicator {
   color: #48bb78;
 }
 
 .current-status-item.status-in-use .timeline-status-indicator {
-  color: #667eea;
+  color: #4299e1;
 }
 
 .current-status-item.status-maintenance .timeline-status-indicator {
@@ -279,19 +331,21 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--primary-color);
+  color: #4299e1;
   font-weight: 600;
-  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.2s;
 }
 
 .back-link:hover {
-  opacity: 0.8;
+  color: #3182ce;
 }
 
 .module-detail-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
 }
 
 .module-overview {
@@ -399,35 +453,28 @@
 }
 
 .attributes-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.2rem;
 }
 
 .attribute-item {
-  background-color: var(--light-bg);
+  padding: 0.8rem;
   border-radius: 6px;
-  padding: 1rem;
-  transition: all 0.3s ease;
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  align-items: center;
-  border-left: 4px solid var(--primary-color);
-}
-
-.attribute-item:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  transform: translateY(-3px);
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
 }
 
 .attribute-name {
   font-weight: 600;
-  color: var(--primary-color);
-  margin-bottom: 0.5rem;
+  color: #4a5568;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
 }
 
 .attribute-value {
-  color: #444;
+  color: #2d3748;
+  font-size: 1rem;
 }
 
 .timeline-section {
@@ -530,4 +577,315 @@
   .attributes-list {
     grid-template-columns: 1fr;
   }
+}
+
+/* 模塊信息卡片樣式 */
+.module-info-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  margin-bottom: 1.5rem;
+}
+
+.info-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.info-card-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0;
+}
+
+.info-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.info-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.column-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin: 0 0 0.5rem 0;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.info-label {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.info-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* 狀態和安裝信息的行樣式 */
+.status-installation-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.card-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 1.25rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* 狀態高亮區域 */
+.status-highlight {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.status-icon {
+  font-size: 1.75rem;
+  color: white;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+.status-content {
+  flex: 1;
+}
+
+.status-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.status-desc {
+  font-size: 0.9rem;
+  color: #4a5568;
+  line-height: 1.5;
+}
+
+/* 模塊屬性卡片 */
+.module-attributes-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  margin-bottom: 1.5rem;
+}
+
+.attributes-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.attribute-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.attribute-name {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.attribute-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* 模塊時間線 */
+.module-timeline-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 8px;
+  width: 2px;
+  background-color: #e2e8f0;
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 2rem;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -2rem;
+  top: 0;
+  width: 16px;
+  height: 16px;
+  background-color: #a0aec0;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #cbd5e0;
+}
+
+.timeline-marker.current {
+  width: 20px;
+  height: 20px;
+  left: -2.1rem;
+  top: -2px;
+  background-color: #4299e1;
+  box-shadow: 0 0 0 2px #63b3ed;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(66, 153, 225, 0.7); }
+  70% { box-shadow: 0 0 0 8px rgba(66, 153, 225, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(66, 153, 225, 0); }
+}
+
+.timeline-content {
+  padding: 0.5rem 0;
+}
+
+.timeline-date {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #718096;
+  margin-bottom: 0.25rem;
+}
+
+.timeline-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timeline-desc {
+  font-size: 0.9rem;
+  color: #4a5568;
+}
+
+/* 模塊3D模型區域 */
+.module-3d-section {
+  margin-bottom: 1.5rem;
+}
+
+/* 響應式設計 */
+@media (max-width: 992px) {
+  .info-columns {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .status-installation-row {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* 錯誤處理樣式 */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.error {
+  color: #e53e3e;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.retry-button {
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retry-button:hover {
+  background-color: #3182ce;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  font-size: 1.1rem;
+  color: #666;
 } 

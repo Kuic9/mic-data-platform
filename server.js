@@ -16,6 +16,7 @@ const ModuleAttribute = require('./src/models/ModuleAttribute');
 const authRoutes = require('./src/routes/auth-simple');
 const revitRoutes = require('./src/routes/revit');
 const revitModelRoutes = require('./src/routes/revitRoutes');
+const sketchfabEmbedRoutes = require('./src/routes/sketchfabEmbedRoutes');
 const dataRoutes = require('./src/routes/data');
 const uploadRoutes = require('./src/routes/upload');
 
@@ -57,11 +58,17 @@ initializeDatabase().catch(console.error);
 // Auth routes
 app.use('/api/auth', authRoutes);
 
-// Revit VR routes
+// Revit VR routes (public access)
 app.use('/api/revit', revitRoutes);
 
-// Revit model management routes
+// Revit model management routes (protected)
 app.use('/api/revit', authenticateToken, revitModelRoutes);
+
+// Public Revit viewer routes (no auth required)
+app.use('/api/viewer', revitModelRoutes);
+
+// Sketchfab embed routes (protected)
+app.use('/api/sketchfab', authenticateToken, sketchfabEmbedRoutes);
 
 // Data management routes (protected)
 app.use('/api/data', authenticateToken, dataRoutes);

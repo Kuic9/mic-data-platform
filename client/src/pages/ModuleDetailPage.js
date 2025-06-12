@@ -1,234 +1,243 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import SimpleSketchfabManager from '../components/SimpleSketchfabManager';
 import './ModuleDetailPage.css';
 
 function ModuleDetailPage() {
   const { moduleId } = useParams();
-  const navigate = useNavigate();
-  const { getAuthHeaders } = useAuth();
+  const { apiCall } = useAuth();
   const [module, setModule] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchModuleData = async () => {
-      try {
-        const response = await fetch(`/api/modules/${moduleId}`, {
-          headers: getAuthHeaders()
-        });
-        
-        if (response.ok) {
-          const moduleData = await response.json();
-          setModule(moduleData);
-        } else {
-          throw new Error('Failed to fetch module data');
-        }
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to load module data. Please try again later.');
-        setLoading(false);
+  const fetchModuleData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // 使用apiCall來自動處理認證問題
+      const response = await apiCall(`/api/modules/${moduleId}`);
+      
+      if (response.ok) {
+        const moduleData = await response.json();
+        setModule(moduleData);
+      } else {
+        throw new Error('Failed to fetch module data');
       }
-    };
+    } catch (err) {
+      console.error('Error fetching module data:', err);
+      setError('無法載入模塊數據，請稍後再試。');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchModuleData();
-  }, [moduleId, getAuthHeaders]);
+  }, [moduleId, apiCall]);
 
-  const handleVRView = () => {
-    // Navigate to VR page and pass module information as state
-    navigate('/vr', { 
-      state: { 
-        selectedModule: module,
-        fromModuleDetail: true 
-      } 
-    });
+  // 獲取狀態對應的說明文字
+  const getStatusDescription = (status) => {
+    switch(status?.toLowerCase()) {
+      case 'active':
+        return '模塊處於活躍狀態，可以正常使用。';
+      case 'in use':
+        return '模塊目前正在使用中。';
+      case 'maintenance':
+        return '模塊正在進行維護或修理。';
+      case 'decommissioned':
+        return '模塊已停止使用，不再服務。';
+      default:
+        return '模塊狀態未知。';
+    }
   };
 
   if (loading) {
-    return <div className="loading">Loading module details...</div>;
+    return <div className="loading">載入模塊詳情中...</div>;
   }
 
   if (error) {
-    return <div className="error">{error}</div>;
+    return (
+      <div className="error-container">
+        <div className="error">{error}</div>
+        <button onClick={fetchModuleData} className="retry-button">
+          重試
+        </button>
+      </div>
+    );
   }
 
   if (!module) {
-    return <div className="error">Module not found</div>;
+    return <div className="error">未找到模塊</div>;
   }
+
+  // 將模塊狀態轉換為CSS類名
+  const statusClass = module.status ? module.status.toLowerCase().replace(/\s+/g, '-') : 'unknown';
 
   return (
     <div className="module-detail-container">
       <div className="module-header">
         <div className="module-header-content">
           <h1 className="module-title">{module.module_id}</h1>
-          <div className={`module-status-badge status-${module.status.toLowerCase().replace(' ', '-')}`}>
-            {module.status}
+          <div className={`module-status-badge status-${statusClass}`}>
+            {module.status || '未知狀態'}
           </div>
         </div>
         <div className="header-actions">
-          <button 
-            className="vr-view-button"
-            onClick={handleVRView}
-            title="In VR view this module"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="1" y="5" width="22" height="14" rx="7"/>
-              <path d="m8 12 4-4 4 4"/>
-            </svg>
-            VR View
-          </button>
           <Link to={`/units/${module.unit_id}`} className="back-link">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="19" y1="12" x2="5" y2="12"></line>
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            Back to Unit
+            返回單元
           </Link>
         </div>
       </div>
       
       <div className="module-detail-content">
-        <div className="module-overview">
-          <div className="module-visualization">
-            <h3 className="visualization-title">Module Visualization</h3>
-            <div className="visualization-placeholder" onClick={handleVRView} style={{ cursor: 'pointer' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                <polyline points="2 17 12 22 22 17"></polyline>
-                <polyline points="2 12 12 17 22 12"></polyline>
-              </svg>
-              <span>Click to enter VR view</span>
+        {/* 顯示3D模型 */}
+        <div className="module-3d-section">
+          <SimpleSketchfabManager 
+            moduleId={module.module_id}
+          />
+        </div>
+
+        {/* 模塊信息卡片 */}
+        <div className="module-info-card">
+          <div className="info-card-header">
+            <h2 className="info-card-title">模塊信息</h2>
+            <div className={`status-indicator status-${statusClass}`}>
+              <span className="status-dot"></span>
+              <span className="status-text">{module.status || '未知狀態'}</span>
             </div>
           </div>
           
-          <div className="module-info-grid">
-            <div className="info-section">
-              <h3 className="section-title">Basic Information</h3>
-              <div className="info-items">
-                <div className="info-item">
-                  <div className="info-label">Module Type</div>
-                  <div className="info-value">{module.module_type}</div>
+          <div className="info-grid">
+            {/* 基本信息和物理特性合併在一起 */}
+            <div className="info-columns">
+              <div className="info-column">
+                <h3 className="column-title">基本信息</h3>
+                <div className="info-row">
+                  <div className="info-label">模塊類型</div>
+                  <div className="info-value">{module.module_type || 'N/A'}</div>
                 </div>
-                <div className="info-item">
-                  <div className="info-label">Manufacturer</div>
-                  <div className="info-value">{module.manufacturer}</div>
+                <div className="info-row">
+                  <div className="info-label">製造商</div>
+                  <div className="info-value">{module.manufacturer || 'N/A'}</div>
                 </div>
-                <div className="info-item">
-                  <div className="info-label">Material</div>
+                <div className="info-row">
+                  <div className="info-label">材料</div>
                   <div className="info-value">{module.major_material || 'N/A'}</div>
                 </div>
-                <div className="info-item">
-                  <div className="info-label">Intended Use</div>
+                <div className="info-row">
+                  <div className="info-label">用途</div>
                   <div className="info-value">{module.intended_use || 'N/A'}</div>
                 </div>
               </div>
-            </div>
-            
-            <div className="info-section">
-              <h3 className="section-title">Physical Properties</h3>
-              <div className="info-items">
-                <div className="info-item">
-                  <div className="info-label">Dimensions</div>
+              
+              <div className="info-column">
+                <h3 className="column-title">物理特性</h3>
+                <div className="info-row">
+                  <div className="info-label">尺寸</div>
                   <div className="info-value">
-                    {module.dimensions ? 
-                      `${module.dimensions.length}×${module.dimensions.width}×${module.dimensions.height}m` : 
+                    {module.dimensions_length && module.dimensions_width && module.dimensions_height ? 
+                      `${module.dimensions_length}×${module.dimensions_width}×${module.dimensions_height}m` : 
                       'N/A'
                     }
                   </div>
                 </div>
-                <div className="info-item">
-                  <div className="info-label">Weight</div>
-                  <div className="info-value">{module.weight ? `${module.weight} tonnes` : 'N/A'}</div>
+                <div className="info-row">
+                  <div className="info-label">重量</div>
+                  <div className="info-value">{module.weight ? `${module.weight} 噸` : 'N/A'}</div>
                 </div>
-                <div className="info-item">
-                  <div className="info-label">Quality Grade</div>
+                <div className="info-row">
+                  <div className="info-label">品質等級</div>
                   <div className="info-value">{module.quality_grade ? `Grade ${module.quality_grade}` : 'N/A'}</div>
                 </div>
-                <div className="info-item">
-                  <div className="info-label">Certification</div>
+                <div className="info-row">
+                  <div className="info-label">認證</div>
                   <div className="info-value">{module.certification || 'N/A'}</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        <div className="module-details-section">
-          <div className="details-row">
-            <div className="detail-box">
-              <h3 className="section-title">Installation Information</h3>
-              <p className="specifications-text">
-                Installation Date: {module.installation_date || 'N/A'}
-              </p>
+        
+        {/* 狀態和安裝信息 */}
+        <div className="status-installation-row">
+          <div className="detail-card installation-card">
+            <h3 className="card-title">安裝信息</h3>
+            <div className="info-row">
+              <div className="info-label">安裝日期</div>
+              <div className="info-value">{module.installation_date || 'N/A'}</div>
             </div>
-            
-            <div className="detail-box status-highlight-box">
-              <h3 className="section-title">Current Status</h3>
-              <div className="status-info-container">
-                <div className={`large-status-badge status-${module.status.toLowerCase().replace(' ', '-')}`}>
-                  <span className="status-icon">●</span>
-                  <span className="status-text">{module.status}</span>
-                </div>
-                <div className="status-description">
-                  <p className="status-explanation">
-                    {module.status === 'In Use' && 'Module is currently installed and in active use'}
-                    {module.status === 'Available' && 'Module is available for installation and reuse'}
-                    {module.status === 'Maintenance' && 'Module is currently under maintenance or repair'}
-                    {module.status === 'Decommissioned' && 'Module has been decommissioned and is no longer in service'}
-                  </p>
-                  <p className="unit-location">Location: Unit {module.unit_id}</p>
-                </div>
+            <div className="info-row">
+              <div className="info-label">單元</div>
+              <div className="info-value">{module.unit_id || 'N/A'}</div>
+            </div>
+          </div>
+          
+          <div className="detail-card status-card">
+            <h3 className="card-title">狀態信息</h3>
+            <div className={`status-highlight status-${statusClass}`}>
+              <div className="status-icon">●</div>
+              <div className="status-content">
+                <div className="status-name">{module.status || '未知狀態'}</div>
+                <div className="status-desc">{getStatusDescription(module.status)}</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="module-attributes-section">
-          <h3 className="section-title">Module Attributes</h3>
-          <div className="attributes-list">
-            {module.attributes && module.attributes.length > 0 ? (
-              module.attributes.map((attr) => (
+        {/* 模塊屬性 */}
+        {module.attributes && module.attributes.length > 0 && (
+          <div className="module-attributes-card">
+            <h3 className="card-title">模塊屬性</h3>
+            <div className="attributes-list">
+              {module.attributes.map((attr) => (
                 <div key={attr.id} className="attribute-item">
                   <div className="attribute-name">{attr.attribute_name}</div>
                   <div className="attribute-value">{attr.attribute_value}</div>
                 </div>
-              ))
-            ) : (
-              <div className="no-attributes">
-                <p>No attributes available for this module.</p>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="timeline-section">
-          <h3 className="section-title">Module Timeline</h3>
-          <div className="timeline-track">
+        {/* 模塊時間線 */}
+        <div className="module-timeline-card">
+          <h3 className="card-title">模塊歷程</h3>
+          <div className="timeline">
             <div className="timeline-item">
-              <div className="timeline-date">Manufacturing</div>
-              <div className="timeline-event">Created</div>
-              <div className="timeline-desc">Manufactured by {module.manufacturer}</div>
+              <div className="timeline-marker"></div>
+              <div className="timeline-content">
+                <div className="timeline-date">製造</div>
+                <div className="timeline-title">已創建</div>
+                <div className="timeline-desc">由 {module.manufacturer || '未知製造商'} 製造</div>
+              </div>
             </div>
             
             {module.installation_date && (
               <div className="timeline-item">
-                <div className="timeline-date">{module.installation_date}</div>
-                <div className="timeline-event">Installation</div>
-                <div className="timeline-desc">Installed in Unit {module.unit_id}</div>
+                <div className="timeline-marker"></div>
+                <div className="timeline-content">
+                  <div className="timeline-date">{module.installation_date}</div>
+                  <div className="timeline-title">安裝</div>
+                  <div className="timeline-desc">安裝於單元 {module.unit_id}</div>
+                </div>
               </div>
             )}
             
-            <div className={`timeline-item current-status-item status-${module.status.toLowerCase().replace(' ', '-')}`}>
-              <div className="timeline-date">Current</div>
-              <div className="timeline-event">
-                <span className="timeline-status-indicator">●</span>
-                {module.status}
-              </div>
-              <div className="timeline-desc">
-                {module.status === 'In Use' && 'Module is currently in use'}
-                {module.status === 'Available' && 'Module is available for reuse'}
-                {module.status === 'Maintenance' && 'Module is under maintenance'}
-                {module.status === 'Decommissioned' && 'Module has been decommissioned'}
+            <div className={`timeline-item current-status timeline-status-${statusClass}`}>
+              <div className="timeline-marker current"></div>
+              <div className="timeline-content">
+                <div className="timeline-date">目前</div>
+                <div className="timeline-title">
+                  <span className="status-dot"></span>
+                  {module.status || '未知狀態'}
+                </div>
+                <div className="timeline-desc">{getStatusDescription(module.status)}</div>
               </div>
             </div>
           </div>

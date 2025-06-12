@@ -121,19 +121,70 @@ export const AuthProvider = ({ children }) => {
       } else {
         console.log('User info fetch failed, status code:', response.status);
         // Token invalid, clear local storage
-        logout();
+        if (response.status === 401) {
+          logout();
+        }
         return null;
       }
     } catch (error) {
       console.error('User info fetch error:', error);
-      logout();
       return null;
+    }
+  };
+
+  // 刷新用戶狀態
+  const refreshUser = async () => {
+    if (!token) return null;
+    return await getCurrentUser();
+  };
+
+  // 帶有自動重試的API調用包裝器
+  const apiCall = async (url, options = {}) => {
+    const headers = {
+      ...getAuthHeaders(),
+      ...options.headers
+    };
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers
+      });
+
+      if (response.status === 401) {
+        // 嘗試刷新用戶狀態
+        console.log('401 error, attempting to refresh user state');
+        const refreshedUser = await refreshUser();
+        
+        if (refreshedUser) {
+          // 重試原始請求
+          return await fetch(url, {
+            ...options,
+            headers: {
+              ...getAuthHeaders(),
+              ...options.headers
+            }
+          });
+        } else {
+          // 刷新失敗，重定向到登錄
+          logout();
+          throw new Error('Authentication failed');
+        }
+      }
+
+      return response;
+    } catch (error) {
+      console.error('API call error:', error);
+      throw error;
     }
   };
 
   // Check user permission
   const hasPermission = (permission) => {
-    return user && user.permissions && user.permissions.includes(permission);
+    if (!user) return false;
+    // Admin用戶擁有所有權限
+    if (user.role === 'admin') return true;
+    return user.permissions && user.permissions.includes(permission);
   };
 
   // Check user role
@@ -224,6 +275,8 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     getCurrentUser,
+    refreshUser,
+    apiCall,
     hasPermission,
     hasRole,
     updateProfile,

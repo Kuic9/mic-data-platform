@@ -1,83 +1,68 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import RevitModelUploader from '../components/RevitModelUploader';
+import SimpleSketchfabManager from '../components/SimpleSketchfabManager';
 import './UnitDetailPage.css';
 
 function UnitDetailPage() {
   const { unitId } = useParams();
-  const { getAuthHeaders } = useAuth();
+  const { apiCall } = useAuth();
   const [unit, setUnit] = useState(null);
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showModelUploader, setShowModelUploader] = useState(false);
-  const [unitModels, setUnitModels] = useState([]);
 
-  useEffect(() => {
-    const fetchUnitData = async () => {
-      try {
-        // Fetch both unit details and its modules in parallel
-        const [unitResponse, modulesResponse] = await Promise.all([
-          fetch(`/api/units/${unitId}`, {
-            headers: getAuthHeaders()
-          }),
-          fetch(`/api/units/${unitId}/modules`, {
-            headers: getAuthHeaders()
-          })
+  const fetchUnitData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // 使用apiCall來自動處理認證問題
+      const [unitResponse, modulesResponse] = await Promise.all([
+        apiCall(`/api/units/${unitId}`),
+        apiCall(`/api/units/${unitId}/modules`)
+      ]);
+      
+      if (unitResponse.ok && modulesResponse.ok) {
+        const [unitData, modulesData] = await Promise.all([
+          unitResponse.json(),
+          modulesResponse.json()
         ]);
         
-        if (unitResponse.ok && modulesResponse.ok) {
-          const [unitData, modulesData] = await Promise.all([
-            unitResponse.json(),
-            modulesResponse.json()
-          ]);
-          
-          setUnit(unitData);
-          setModules(modulesData);
-        } else {
-          throw new Error('Failed to fetch unit data');
-        }
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to load unit data. Please try again later.');
-        setLoading(false);
-      }
-    };
-
-    fetchUnitData();
-    fetchUnitModels();
-  }, [unitId, getAuthHeaders]);
-
-  const fetchUnitModels = async () => {
-    try {
-      const response = await fetch(`/api/units/${unitId}/models`, {
-        headers: getAuthHeaders()
-      });
-      if (response.ok) {
-        const modelsData = await response.json();
-        setUnitModels(modelsData);
+        setUnit(unitData);
+        setModules(modulesData);
+      } else {
+        throw new Error('Failed to fetch unit data');
       }
     } catch (err) {
-      console.error('Failed to fetch unit models:', err);
+      console.error('Error fetching unit data:', err);
+      setError('無法載入單元數據，請稍後再試。');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleModelUploadComplete = (newModel) => {
-    setUnitModels(prev => [...prev, newModel]);
-    setShowModelUploader(false);
-  };
+  useEffect(() => {
+    fetchUnitData();
+  }, [unitId, apiCall]);
 
   if (loading) {
-    return <div className="loading">Loading unit details...</div>;
+    return <div className="loading">載入單元詳情中...</div>;
   }
 
   if (error) {
-    return <div className="error">{error}</div>;
+    return (
+      <div className="error-container">
+        <div className="error">{error}</div>
+        <button onClick={fetchUnitData} className="retry-button">
+          重試
+        </button>
+      </div>
+    );
   }
 
   if (!unit) {
-    return <div className="error">Unit not found</div>;
+    return <div className="error">未找到單元</div>;
   }
 
   return (
@@ -102,6 +87,15 @@ function UnitDetailPage() {
       </div>
       
       <div className="unit-detail-content">
+        {/* Sketchfab 模型管理器 - 移到最上方 */}
+        <div className="sketchfab-section">
+          <SimpleSketchfabManager 
+            projectId={unit.project_id}
+            unitId={unitId}
+            modules={modules}
+          />
+        </div>
+
         <div className="unit-overview">
           <div className="unit-info-section">
             <h2 className="section-title">Unit Information</h2>
@@ -128,77 +122,7 @@ function UnitDetailPage() {
               </div>
             </div>
           </div>
-          
-          <div className="unit-schematic">
-            <div className="schematic-header">
-              <h3 className="schematic-title">Unit 3D Model & Schematic</h3>
-              <button 
-                className="btn-upload-model"
-                onClick={() => setShowModelUploader(!showModelUploader)}
-              >
-                {showModelUploader ? 'Close Uploader' : 'Upload 3D Model'}
-              </button>
-            </div>
-            
-            {unitModels.length > 0 ? (
-              <div className="unit-models-display">
-                {unitModels.map((model, index) => (
-                  <div key={index} className="model-display-item">
-                    <div className="model-preview-small">
-                      {model.format === '.ifc' ? (
-                        <iframe 
-                          src={`/api/revit/viewer/${model.id}`}
-                          title="Unit Model Viewer"
-                          width="100%" 
-                          height="200px"
-                        />
-                      ) : (
-                        <model-viewer
-                          src={model.url}
-                          alt={model.name}
-                          auto-rotate
-                          camera-controls
-                          style={{ width: '100%', height: '200px' }}
-                        />
-                      )}
-                    </div>
-                    <div className="model-info-small">
-                      <h4>{model.name}</h4>
-                      <p>格式: {model.format}</p>
-                      <div className="model-actions-small">
-                        <button 
-                          className="btn-view-full"
-                          onClick={() => window.open(`/vr?model=${model.id}`, '_blank')}
-                        >
-                          Full View
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="schematic-placeholder">
-                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                  <path d="M3 9h18"></path>
-                  <path d="M9 21V9"></path>
-                </svg>
-                <span>Upload your Revit model to display here</span>
-              </div>
-            )}
-          </div>
         </div>
-
-        {showModelUploader && (
-          <div className="model-uploader-section">
-            <RevitModelUploader 
-              projectId={unit.project_id}
-              unitId={unitId}
-              onUploadComplete={handleModelUploadComplete}
-            />
-          </div>
-        )}
 
         <div className="modules-section">
           <div className="section-header">

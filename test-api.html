@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API 測試</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        button { padding: 10px 20px; margin: 10px; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; }
+        .result { margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>MiC 平台 API 測試</h1>
+    
+    <button onclick="testModels()">測試獲取模型列表</button>
+    <button onclick="testViewer()">測試 IFC Viewer</button>
+    
+    <div class="result">
+        <h2>測試結果：</h2>
+        <pre id="result"></pre>
+    </div>
+
+    <script>
+        const baseURL = 'http://localhost:5001';
+        
+        async function testModels() {
+            try {
+                const response = await fetch(`${baseURL}/api/viewer/public-models`);
+                const data = await response.json();
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+                
+                if (data.length > 0) {
+                    console.log('找到模型：', data);
+                    // 自動測試第一個模型的 viewer
+                    const firstModel = data[0];
+                    const viewerUrl = `${baseURL}/api/viewer/viewer/${firstModel.id}`;
+                    console.log('Viewer URL:', viewerUrl);
+                }
+            } catch (error) {
+                document.getElementById('result').textContent = '錯誤: ' + error.message;
+            }
+        }
+        
+        async function testViewer() {
+            try {
+                const response = await fetch(`${baseURL}/api/viewer/public-models`);
+                const data = await response.json();
+                
+                if (data.length > 0) {
+                    const firstModel = data[0];
+                    const viewerUrl = `${baseURL}/api/viewer/viewer/${firstModel.id}`;
+                    window.open(viewerUrl, '_blank');
+                } else {
+                    alert('沒有找到任何模型');
+                }
+            } catch (error) {
+                alert('錯誤: ' + error.message);
+            }
+        }
+        
+        // 頁面載入時自動測試
+        window.onload = () => {
+            testModels();
+        };
+    </script>
+</body>
+</html> 

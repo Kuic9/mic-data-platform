@@ -430,4 +430,110 @@
   .modules-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* 3D模型預覽區域 */
+.unit-models-preview {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 12px;
+  border: 1px solid #dee2e6;
+}
+
+.models-quick-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.quick-preview-item {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.quick-preview-item .iframe-container {
+  width: 100%;
+  height: 150px;
+  overflow: hidden;
+}
+
+.quick-preview-item .iframe-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.quick-preview-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.preview-info {
+  padding: 1rem;
+  text-align: center;
+}
+
+.preview-info h4 {
+  margin: 0 0 0.5rem 0;
+  color: #495057;
+  font-size: 1rem;
+}
+
+.preview-more {
+  text-align: center;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Sketchfab 管理器區域 */
+.sketchfab-section {
+  margin-top: 2rem;
+}
+
+/* 錯誤處理樣式 */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.error {
+  color: #e53e3e;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.retry-button {
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retry-button:hover {
+  background-color: #3182ce;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  font-size: 1.1rem;
+  color: #666;
 } 

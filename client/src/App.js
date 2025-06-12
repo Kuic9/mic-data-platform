@@ -18,18 +18,18 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
-        {/* 公開路由 */}
+        {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         
-        {/* VR 頁面 - 獨立路由，不需要 Layout */}
+        {/* VR page - independent route, doesn't need Layout */}
         <Route path="/vr" element={
           <ProtectedRoute>
             <VRPage />
           </ProtectedRoute>
         } />
         
-        {/* 受保護的路由 */}
+        {/* Protected routes */}
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <Dashboard />
